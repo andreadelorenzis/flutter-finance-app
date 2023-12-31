@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "584644999416",
+    "project_id": "financeapp-d6fda",
+    "storage_bucket": "financeapp-d6fda.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584644999416:android:70f32343ae6b56bbfaa30d",
+        "android_client_info": {
+          "package_name": "com.example.flutter_finance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBItbDNbnjBERnsS5HN1clV-Xky5_uJQeo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
