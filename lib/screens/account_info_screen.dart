@@ -2,13 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 
 class AccountInfoScreen extends StatefulWidget {
-  const AccountInfoScreen({super.key});
+  final String ?name;
+  final String ?email;
+
+  const AccountInfoScreen({
+    required this.name,
+    required this.email,
+    super.key
+  });
 
   @override
   State<AccountInfoScreen> createState() => _AccountInfoScreenState();
 }
 
 class _AccountInfoScreenState extends State<AccountInfoScreen> {
+  bool _loading = false;
+  final _formKey = GlobalKey<FormState>();
+  String? errorMessage = '';
+  final TextEditingController _controllerName = TextEditingController();
+  final TextEditingController _controllerEmail = TextEditingController();
+
+  @override
+  void initState() {
+    _controllerName.text = widget.name!;
+    _controllerEmail.text = widget.email!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,46 +50,63 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
             right: 30,
             bottom: 30
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                  labelText: 'FULL NAME',
-                  fillColor: AppColors.backgroundColor,
-                  filled: true,
-                  prefixIcon: const Padding(
-                      padding: EdgeInsets.only(left: 20, right: 20),
-                      child: Icon(Icons.person, color: AppColors.textColor)
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide.none
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 30.0)
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _controllerName,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                    labelText: 'FULL NAME',
+                    fillColor: AppColors.backgroundColor,
+                    filled: true,
+                    prefixIcon: const Padding(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.person, color: AppColors.textColor)
+                    ),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide.none
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 30.0)
+                ),
+                keyboardType: TextInputType.text,
               ),
-              keyboardType: TextInputType.text,
-            ),
-            SizedBox(height: 20,),
-            TextField(
-              decoration: InputDecoration(
-                  labelText: 'EMAIL',
-                  fillColor: AppColors.backgroundColor,
-                  filled: true,
-                  prefixIcon: const Padding(
-                      padding: EdgeInsets.only(left: 20, right: 20),
-                      child: Icon(Icons.email, color: AppColors.textColor)
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide.none
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 30.0)
+              SizedBox(height: 20,),
+              TextFormField(
+                controller: _controllerEmail,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                    labelText: 'EMAIL',
+                    fillColor: AppColors.backgroundColor,
+                    filled: true,
+                    prefixIcon: const Padding(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.email, color: AppColors.textColor)
+                    ),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide.none
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 30.0)
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-          ],
-        ),
+            ],
+          ),
+        )
       )
     );
   }

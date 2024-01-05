@@ -3,7 +3,6 @@ import 'package:flutter_finance_app/constants/data.dart';
 
 class TransactionItem extends StatefulWidget{
   final Map<String, dynamic> transaction;
-  final String dateKey;
   final bool isSelected;
   final bool isEditing;
   final Function onLongPress;
@@ -12,7 +11,6 @@ class TransactionItem extends StatefulWidget{
   const TransactionItem({
     Key? key,
     required this.transaction,
-    required this.dateKey,
     required this.isSelected,
     required this.isEditing,
     required this.onLongPress,
@@ -38,7 +36,7 @@ class _TransactionItemState extends State<TransactionItem> {
               Checkbox(
                 value: widget.isSelected,
                 onChanged: (bool? newValue) {
-                  widget.onCheckboxChange(newValue!, widget.dateKey + widget.transaction['name']);
+                  widget.onCheckboxChange(newValue!, widget.transaction['id']);
                 },
               ),
             Container(

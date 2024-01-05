@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/account_info_screen.dart';
 import 'package:flutter_finance_app/screens/change_password_screen.dart';
 import 'package:flutter_finance_app/screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final String ?name;
+  final String ?email;
+
+  const ProfileScreen({
+    required this.name,
+    required this.email,
+    super.key
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -42,12 +50,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 }
 
+  Future<void> signOut() async {
+    await Auth().signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.only(
-            top: 20,
+            top: 60,
             left: 30,
             right: 30,
             bottom: 30
@@ -59,11 +71,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Tom Hillson',
+                    widget.name ?? '',
                     style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700, color: AppColors.pureBlack),
                   ),
                   Text(
-                    'tomhill@gmail.com',
+                    widget.email ?? '',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textColor2),
                   )
                 ],
@@ -76,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.person,
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => AccountInfoScreen()
+                    builder: (context) => AccountInfoScreen(name: widget.name, email: widget.email)
                 ));
               }
             ),
@@ -87,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.lock,
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => ChangePasswordScreen()
+                      builder: (context) => ChangePasswordScreen(email: widget.email)
                   ));
                 }
             ),
@@ -97,9 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 text2: null,
                 icon: Icons.logout,
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => LoginScreen()
-                  ));
+                  signOut();
                 }
             )
           ],

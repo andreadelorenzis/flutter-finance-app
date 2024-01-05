@@ -1,51 +1,154 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/constants/colors.dart';
+import 'package:intl/intl.dart';
 import 'budget_month_screen.dart';
 
 class ChooseBudgetPeriodScreen extends StatefulWidget {
-  const ChooseBudgetPeriodScreen({super.key});
+  final Function onDataUpdated;
+  final bool isEditing;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double initialBalance;
+
+  const ChooseBudgetPeriodScreen({
+    super.key,
+    required this.onDataUpdated,
+    this.isEditing = false,
+    required this.startDate,
+    required this.endDate,
+    required this.initialBalance
+  });
 
   @override
   _ChooseBudgetPeriodScreenState createState() => _ChooseBudgetPeriodScreenState();
 }
 
 class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
-  DateTime? startDate;
-  DateTime? endDate;
+  late ValueNotifier<DateTime> startDateNotifier;
+  late ValueNotifier<DateTime> endDateNotifier;
+  late ValueNotifier<double> initialBalanceNotifier;
   TextEditingController budgetController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    startDateNotifier = ValueNotifier(widget.startDate);
+    endDateNotifier = ValueNotifier(widget.endDate);
+    initialBalanceNotifier = ValueNotifier(widget.initialBalance);
+    budgetController = TextEditingController(text: widget.initialBalance.toString());
+  }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: isStartDate ? startDate ?? DateTime.now() : endDate ?? DateTime.now(),
+      initialDate: isStartDate ? startDateNotifier.value ?? DateTime.now() : endDateNotifier.value ?? DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
+      lastDate: DateTime(2050),
     );
-    if (picked != null && picked != (isStartDate ? startDate : endDate)) {
+    if (picked != null && picked != (isStartDate ? startDateNotifier.value : endDateNotifier.value)) {
       setState(() {
         if (isStartDate) {
-          startDate = picked;
+          startDateNotifier.value = picked;
         } else {
-          endDate = picked;
+          endDateNotifier.value = picked;
         }
       });
     }
   }
 
-  void _navigateToBudgetMonthScreen() {
+  void _navigateToBudgetMonthScreen() async {
+    if (widget.isEditing) {
+      return;
+    }
+
     double? initialBudget = double.tryParse(budgetController.text);
-    if (startDate != null && endDate != null && initialBudget != null) {
+    if (startDateNotifier.value != null && endDateNotifier.value != null && initialBudget != null) {
+      await _saveBudgetData(startDateNotifier.value!, endDateNotifier.value!, initialBudget);
+    }
+
+    if (startDateNotifier.value != null && endDateNotifier.value != null && initialBudget != null) {
+      initialBalanceNotifier.value = initialBudget;
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => BudgetMonthScreen(
-            startDate: startDate!,
-            endDate: endDate!,
-            initialBalance: initialBudget
+            startDate: startDateNotifier,
+            endDate: endDateNotifier,
+            initialBalance: initialBalanceNotifier,
+            deposits: ValueNotifier([]),
+            expenses: ValueNotifier([]),
+            monthlyBalances: ValueNotifier([]),
+            onDataUpdated: widget.onDataUpdated,
           ),
         ),
       );
     } else {
-      // Qui puoi mostrare un errore se le date o il bilancio non sono validi
+      // messaggio di errore
+    }
+  }
+
+  Future<void> _saveBudgetData(DateTime startDate, DateTime endDate, double initialBudget) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('Utente non autenticato');
+    }
+
+    String userId = user.uid;
+    DocumentReference budgetRef = FirebaseFirestore.instance.collection('users')
+        .doc(userId).collection('budget')
+        .doc('monthlyBudget');
+
+    // Creazione di una mappa per ogni mese nel periodo
+    Map<String, List<Map<String, dynamic>>> monthlyTransactions = {};
+    DateTime currentMonth = DateTime(startDate.year, startDate.month);
+    while (currentMonth.isBefore(endDate) || currentMonth.isAtSameMomentAs(endDate)) {
+      String monthKey = '${currentMonth.year}-${currentMonth.month.toString().padLeft(2, '0')}';
+      monthlyTransactions[monthKey] = [];
+
+      currentMonth = DateTime(currentMonth.year, currentMonth.month + 1);
+    }
+
+    // Inizializzazione delle transazioni fisse
+    Map<String, List<dynamic>> fixedTransactions = {
+      'deposits': [],
+      'expenses': []
+    };
+
+    Map<String, dynamic> budgetData = {
+      'startDate': Timestamp.fromDate(startDate),
+      'endDate': Timestamp.fromDate(endDate),
+      'initialBalance': initialBudget,
+      'monthlyTransactions': monthlyTransactions,
+      'fixedTransactions': fixedTransactions
+    };
+
+    await budgetRef.set(budgetData, SetOptions(merge: true));
+  }
+
+  void handleSubmit() {
+    if (!widget.isEditing) {
+      return;
+    }
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return;
+    }
+
+    double? initialBudget = double.tryParse(budgetController.text);
+    if (startDateNotifier.value != null && endDateNotifier.value != null && initialBudget != null) {
+      Map<String, dynamic> periodData = {
+        'startDate': Timestamp.fromDate(startDateNotifier.value!),
+        'endDate': Timestamp.fromDate(endDateNotifier.value!),
+        'initialBalance': initialBudget
+      };
+
+      widget.onDataUpdated(periodData);
+      Navigator.pop(context, true);
+    } else {
+      // messaggio di errore
     }
   }
 
@@ -55,31 +158,80 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Scegli Periodo Budget'),
+        actions: widget.isEditing
+          ? [
+              IconButton(
+                  icon: Icon(Icons.check),
+                  onPressed: handleSubmit
+              ),
+            ]
+          : []
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            ListTile(
-              title: Text('Data Inizio: ${startDate?.toString() ?? 'Non selezionato'}'),
-              trailing: Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context, true),
-            ),
-            ListTile(
-              title: Text('Data Fine: ${endDate?.toString() ?? 'Non selezionato'}'),
-              trailing: Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context, false),
-            ),
-            TextField(
-              controller: budgetController,
-              decoration: InputDecoration(labelText: 'Valore Bilancio Iniziale'),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-            ),
-            ElevatedButton(
-              onPressed: _navigateToBudgetMonthScreen,
-              child: Text('Avanti'),
-            ),
+            Form(child: Column(
+              children: [
+                ListTile(
+                  title: Text('Data Inizio: ${DateFormat('dd/MM/yyyy').format(startDateNotifier.value) ?? 'Non selezionato'}'),
+                  trailing: Icon(Icons.calendar_today),
+                  onTap: () => _selectDate(context, true),
+                ),
+                ListTile(
+                  title: Text('Data Fine: ${DateFormat('dd/MM/yyyy').format(endDateNotifier.value) ?? 'Non selezionato'}'),
+                  trailing: Icon(Icons.calendar_today),
+                  onTap: () => _selectDate(context, false),
+                ),
+                SizedBox(height: 20,),
+                TextFormField(
+                  controller: budgetController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a valid initial balance';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                      labelText: 'Initial balance',
+                      fillColor: AppColors.backgroundColor,
+                      filled: true,
+                      prefixIcon: const Padding(
+                          padding: EdgeInsets.only(left: 20, right: 20),
+                          child: Icon(Icons.monetization_on, color: AppColors.textColor)
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: BorderSide.none
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 30.0)
+                  ),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                ),
+                SizedBox(height: 20,),
+                !widget.isEditing
+                    ? ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondaryColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 40)
+                      ),
+                      onPressed: _navigateToBudgetMonthScreen,
+                      child: Text(
+                        'Generate',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pureBlack,
+                            fontSize: 16
+                        ),
+                      ),
+                      )
+                    : SizedBox()
+              ],
+            ))
           ],
         ),
       ),
