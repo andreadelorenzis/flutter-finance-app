@@ -99,7 +99,7 @@ pagina di accesso.
 <p align="center">
   <img src="assets/screenshots/profile_screen.png" alt="Profile screen" width="200" style="margin-right: 20px"/>
   <img src="assets/screenshots/change_password_screen.png" alt="Change password screen" width="200" style="margin-right: 20px"/>
-  <img src="assets/screenshots/account_info_screen.png" alt="Account info screen" width="210"/>
+  <img src="assets/screenshots/account_info_screen.png" alt="Account info screen" width="207"/>
 </p>
 
 --- 
