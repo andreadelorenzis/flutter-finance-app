@@ -5,13 +5,7 @@ import 'package:universal_platform/universal_platform.dart';
 
 class Auth{
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: '584644999416-jrmskqqjtjtihe7qggrcmv5v7g3gvs9f.apps.googleusercontent.com',
-    scopes: <String>[
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly'
-    ]
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? get currentUser => _firebaseAuth.currentUser;
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();

@@ -172,7 +172,14 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     for (int i = 0; i < months; i++) {
       double totalDeposits = getTotal(deposits.value[i]);
       double totalExpenses = getTotal(expenses.value[i]);
-      double? monthInitialBalance = monthlyBalances.value[i]['balance'];
+      double? monthInitialBalance;
+
+      if (i == 0) {
+        monthInitialBalance = monthlyBalances.value[i]['balance'];
+      } else {
+        monthInitialBalance = monthlyBalances.value[i-1]['balance'];
+      }
+
       double newBalance = monthInitialBalance! + (totalDeposits - totalExpenses);
       monthlyBalances.value[i]['balance'] = newBalance;
     }
