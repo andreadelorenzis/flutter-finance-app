@@ -42,34 +42,29 @@ L'app calcola quanto Mario sarà in grado di risparmiare ogni mese, e quale sar�
 Lo splash screen è la prima cosa che vedono gli utenti quando aprono l'applicazione. Sfrutta il tempo di caricamento
 dell'app per mostrare un logo di branding.
 <p align="center">
-  <img src="assets/screenshots/splash_screen.png" alt="Descrizione alternativa" width="200"/>
+  <img src="assets/screenshots/splash_screen.png" alt="Splash screen" width="200"/>
 </p>
 
 ### Autenticazione
 Se la sessione di autenticazione dell'utente è scaduta, questo viene portato alla pagina di "Sign In" in cui può riautenticarsi. 
 Se è la prima volta che l'utente accede all'app, deve dirigersi alla pagina di "Sign Up", per creare un nuovo account. Se l'utente si era precedentemente autenticato, ma non ricorda le proprie
 credenziali, può richiedere un reset della password via email tramite l'apposita pagina.
-<div style="display: flex; justify-content: center">
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/login_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/signup_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center">
-   <img src="assets/screenshots/forgot_password.png" alt="Descrizione alternativa" width="200"/>
- </p>
-</div>
 
+<p align="center">
+  <img src="assets/screenshots/login_screen.png" alt="Login screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/signup_screen.png" alt="Signup screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/forgot_password.png" alt="Forgot Password screen" width="200"/>
+</p>
+ 
 ### Registro transazioni
 Una volta effettuato l'accesso all'applicazione, si viene portati alla pagina "History", che mostra lo storico delle transazioni eventualmente aggiunte dall'utente
 . Qui l'utente può aggiungere una nuova transazione tramite l'apposito pulsante in basso a destra. Oppure, premendo a lungo su una delle transazioni, entrerà nella modalità di
  selezione, in cui potrà selezionare una transazione da modificare o più transazioni da eliminare. 
 
 <p align="center">
-  <img src="assets/screenshots/history_screen.png" alt="Descrizione alternativa" width="200"/>
-  <img src="assets/screenshots/add_transaction.png" alt="Descrizione alternativa" width="200"/>
-  <img src="assets/screenshots/edit_transaction.png" alt="Descrizione alternativa" width="200"/>
+  <img src="assets/screenshots/history_screen.png" alt="History screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/add_transaction.png" alt="Add Transaction screen" width="196" style="margin-right: 20px"/>
+  <img src="assets/screenshots/edit_transaction.png" alt="Edit Transaction screen" width="200"/>
 </p>
 
 ### Grafici
@@ -77,11 +72,9 @@ Se sono stati aggiungi dei dati nella pagina "History", accedendo alla pagina "C
 spaccato delle spese dell'utente nelle diverse categorie. Cliccando sul menu a discesa in alto, si può visualizzare invece lo stesso grafico ma per le entrate
  dell'account.
 
-<div style="display: flex; justify-content: center">
- <p align="center">
-   <img src="assets/screenshots/charts_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
-</div>
+<p align="center">
+  <img src="assets/screenshots/charts_screen.png" alt="Charts screen" width="200"/>
+</p>
 
 ### Pianificazione finanziaria
 Se l'utente non ha mai creato un piano finanziario, accedendo alla pagina "Budget" vedrà un pulsante "Create budget" per creare un nuovo piano. Cliccando sul
@@ -91,37 +84,23 @@ da un mese all'altro tramite scroll verso destra o sinistra. Infine, tornando al
 ma una pagina che mostra l'andamento del piano dall'inizio alla fine, con profitto e bilancio di ogni mese. Cliccando sul pulsante di editing, l'utente può tornare alla schermata con
 le transazioni previste per i vari mesi per effettuare eventuali modifiche, con la possibilità anche di modificare il periodo di budget. 
 
-<div style="display: flex; justify-content: center">
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/create_budget_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/budget_period_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/budget_month_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center">
-   <img src="assets/screenshots/budget_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
-</div>
-
+<p align="center">
+  <img src="assets/screenshots/create_budget_screen.png" alt="Create budget screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/budget_period_screen.png" alt="Budget period screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/budget_month_screen.png" alt="Budget month screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/budget_screen.png" alt="Budget screen" width="200"/>
+</p>
+ 
 ### Profilo
 La pagina "Profile" mostra alcune informazioni dell'utente, come nome, cognome e email usata in fase di autenticazione. Se si è scelta la modalità di accesso 
 con email e password, queste informazioni, nonchè la password, possono essere modificate tramite gli appositi pulsanti. E' possibile poi fare logout per tornare alla 
 pagina di accesso.
 
-<div style="display: flex; justify-content: center">
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/profile_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/change_password_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/account_info_screen.png" alt="Descrizione alternativa" width="210"/>
- </p>
-</div>
+<p align="center">
+  <img src="assets/screenshots/profile_screen.png" alt="Profile screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/change_password_screen.png" alt="Change password screen" width="200" style="margin-right: 20px"/>
+  <img src="assets/screenshots/account_info_screen.png" alt="Account info screen" width="210"/>
+</p>
 
 --- 
 
