@@ -249,7 +249,7 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('${entry.key}    €${entry.value.toStringAsFixed(2)}%'),
+                                Text('${entry.key}    €${entry.value.toStringAsFixed(2)}'),
                                 Text('${percentage.toStringAsFixed(1)}%'),
                               ],
                             ),

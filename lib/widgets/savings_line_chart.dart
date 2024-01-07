@@ -336,9 +336,14 @@ class _SavingsChartState extends State<SavingsChart> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isWideScreen = screenSize.width > 600;
+    final chartWidth = isWideScreen ? min(screenSize.width * 0.7, 600.0) : double.infinity;
+    final chartHeight = isWideScreen ? 600.0 : 400.0;
+
     return Container(
-      height: 400,
-      width: double.infinity,
+      height: chartHeight,
+      width: chartWidth,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         color: AppColors.primaryColor,
@@ -346,7 +351,7 @@ class _SavingsChartState extends State<SavingsChart> {
       child: Stack(
         children: <Widget>[
           AspectRatio(
-            aspectRatio: 1.65,
+            aspectRatio: isWideScreen ? 3 : 1.65,
             child: Padding(
               padding: const EdgeInsets.only(
                 right: 18,

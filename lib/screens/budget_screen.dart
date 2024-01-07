@@ -377,6 +377,9 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
   }
 
   Widget _buildPlanCreatedView() {
+    final screenSize = MediaQuery.of(context).size;
+    final isWideScreen = screenSize.width > 600;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(
@@ -396,7 +399,7 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
                   monthlyBalances.value[0]['balance']!,
                   startDate.value,
                 ),
-                Icon(Icons.arrow_forward, size: 30),
+                Icon(Icons.arrow_forward, size: isWideScreen ? 50 : 30),
                 _buildBalanceInfo(
                     "Fine",
                     monthlyBalances.value[monthlyBalances.value.length - 1]['balance']!,

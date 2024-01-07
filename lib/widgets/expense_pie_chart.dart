@@ -19,12 +19,15 @@ class PieChartSample2 extends StatefulWidget {
 class _PieChart2State extends State<PieChartSample2> {
   int touchedIndex = -1;
 
+
   @override
   Widget build(BuildContext context) {
     var categoryList = widget.categories.keys.toList();
+    final screenSize = MediaQuery.of(context).size;
+    final isWideScreen = screenSize.width > 600;
 
     return AspectRatio(
-      aspectRatio: 1.6,
+      aspectRatio: isWideScreen ? 3.0 : 1.6,
       child: Row(
         children: <Widget>[
           const SizedBox(
@@ -85,10 +88,15 @@ class _PieChart2State extends State<PieChartSample2> {
     double total = widget.categories.values.fold(0, (a, b) => a + b);
     var categoryList = widget.categories.keys.toList();
 
+    double screenWidth =  MediaQuery.of(context).size.width;
+    double baseRadius = screenWidth / 10;
+
     return List.generate(widget.categories.length, (i) {
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 25.0 : 16.0;
-      final radius = isTouched ? 60.0 : 50.0;
+
+      final radius = isTouched ? baseRadius * 1.2 : baseRadius;
+
       final shadows = [Shadow(color: Colors.black, blurRadius: 2)];
       double value = (widget.categories[categoryList[i]]! / total) * 100;
       Color color = Data.transactionTypes[categoryList[i]]?['color'];

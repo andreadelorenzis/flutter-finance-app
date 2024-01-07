@@ -10,6 +10,7 @@ import 'package:flutter_finance_app/screens/main_scaffold_screen.dart';
 import 'package:flutter_finance_app/screens/registration_screen.dart';
 import 'package:flutter_finance_app/screens/charts_screen.dart';
 import 'package:flutter_finance_app/screens/widget_tree.dart';
+import 'package:flutter_finance_app/widgets/SplashScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
           labelStyle: TextStyle(color: AppColors.textColor)
         )
       ),
-      home: const WidgetTree(),
+      home: SplashScreen(),
     );
   }
 }
