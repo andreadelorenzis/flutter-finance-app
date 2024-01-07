@@ -23,18 +23,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   void initState() {
+    super.initState();
     _controllerEmail.text = widget.email!;
-  }
-
-  Widget _errorMessage() {
-    return Text(errorMessage == '' ? '' : 'Humm ? $errorMessage');
   }
 
   Future<void> resetPassword() async {
     try {
       Auth().resetPassword(email: _controllerEmail.text.trim());
-      final snackBar = SnackBar(
-          content: const Text('Password reset email sent.')
+      const snackBar = SnackBar(
+          content: Text('Password reset email sent.')
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } on FirebaseAuthException catch (e) {
@@ -55,7 +52,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Change password"),
+          title: const Text("Change password"),
         ),
         body: Center(
           child: Container(
@@ -94,7 +91,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                         keyboardType: TextInputType.emailAddress
                     ),
-                    SizedBox(height: 20,),
+                    const SizedBox(height: 20,),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.secondaryColor,
@@ -104,14 +101,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16)
                         ),
                         onPressed: handleSubmit,
-                        /*
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => const MainScaffoldScreen(initialIndex: 0,)),
-                                        );
-                                      },
-                                      */
                         child: _loading
                             ? const SizedBox(
                           width: 20,

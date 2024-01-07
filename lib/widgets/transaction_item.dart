@@ -9,16 +9,16 @@ class TransactionItem extends StatefulWidget{
   final Function(bool, String) onCheckboxChange;
 
   const TransactionItem({
-    Key? key,
+    super.key,
     required this.transaction,
     required this.isSelected,
     required this.isEditing,
     required this.onLongPress,
     required this.onCheckboxChange,
-  }) : super(key: key);
+  });
 
   @override
-  _TransactionItemState createState() => _TransactionItemState();
+  State<TransactionItem> createState() => _TransactionItemState();
 }
 
 class _TransactionItemState extends State<TransactionItem> {

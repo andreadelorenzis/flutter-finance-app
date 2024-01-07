@@ -23,8 +23,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> resetPassword() async {
     try {
       Auth().resetPassword(email: emailController.text.trim());
-      final snackBar = SnackBar(
-        content: const Text('Password reset email sent.')
+      const snackBar = SnackBar(
+        content: Text('Password reset email sent.')
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } on FirebaseAuthException catch (e) {
@@ -44,7 +44,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('ResetPassword'),),
+      appBar: AppBar(title: const Text('ResetPassword'),),
       body: Center(
         child: Stack(
           children: <Widget>[
@@ -60,7 +60,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             // Contenuti della schermata
             Center(
-                child: Container(
+                child: SizedBox(
                     width: 400,
                     child: SingleChildScrollView(
                         child: Padding(
@@ -114,14 +114,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           padding: const EdgeInsets.symmetric(vertical: 16)
                                       ),
                                       onPressed: handleSubmit,
-                                      /*
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => const MainScaffoldScreen(initialIndex: 0,)),
-                                        );
-                                      },
-                                      */
                                       child: _loading
                                           ? const SizedBox(
                                         width: 20,

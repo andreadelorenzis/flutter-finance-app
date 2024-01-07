@@ -1,6 +1,4 @@
-// File: savings_chart.dart
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
@@ -10,12 +8,12 @@ class SavingsChart extends StatefulWidget {
   final List<Map<String, dynamic>> monthlyBalances;
 
   const SavingsChart({
-    Key? key,
+    super.key,
     required this.monthlyBalances
-  }) : super(key: key);
+  });
 
   @override
-  _SavingsChartState createState() => _SavingsChartState();
+  State<SavingsChart> createState() => _SavingsChartState();
 }
 
 class _SavingsChartState extends State<SavingsChart> {
@@ -47,14 +45,14 @@ class _SavingsChartState extends State<SavingsChart> {
     String year = parts.length > 1 ? parts[1] : '';
     String month = Months.getShort(value.toInt());
     int lastIndex = widget.monthlyBalances.length - 2;
-    int middleIndex = (widget.monthlyBalances.length / 2).toInt();
+    int middleIndex = widget.monthlyBalances.length ~/ 2;
 
     // Mostra l'etichetta solo per il primo e l'ultimo mese
     Widget text;
     if (value.toInt() == 1 || value.toInt() == lastIndex || value.toInt() == middleIndex) {
       text = Text('$month $year', style: style);
     } else {
-      text = Text('', style: style);
+      text = const Text('', style: style);
     }
 
     return SideTitleWidget(
@@ -94,7 +92,7 @@ class _SavingsChartState extends State<SavingsChart> {
 
     return Center(
         child: Padding(
-          padding: EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.only(right: 10),
           child: Text(labelText, style: style, textAlign: TextAlign.left),
         ),
     );
@@ -102,7 +100,7 @@ class _SavingsChartState extends State<SavingsChart> {
 
   bool shouldDrawHorizontalLine(double value) {
     List<double> realValues = widget.monthlyBalances
-        .map((e) => (e["balance"] as double) ?? 0.0)
+        .map((e) => (e["balance"] as double))
         .toList();
 
     double maxY = realValues.reduce(max);
@@ -135,13 +133,13 @@ class _SavingsChartState extends State<SavingsChart> {
           tooltipBgColor: Colors.blueAccent,
           getTooltipItems: (touchedSpots) {
             return touchedSpots.map((LineBarSpot touchedSpot) {
-              final textStyle = TextStyle(
+              const textStyle = TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 14
               );
               double realValue = widget.monthlyBalances[touchedSpot.x.toInt()]['balance'];
-              return LineTooltipItem('${realValue }€', textStyle);
+              return LineTooltipItem('$realValue €', textStyle);
             }).toList();
           }
         ),
@@ -163,7 +161,7 @@ class _SavingsChartState extends State<SavingsChart> {
               strokeWidth: 1,
             );
           } else {
-            return FlLine(
+            return const FlLine(
               color: Colors.transparent,
               strokeWidth: 0,
             );
@@ -200,8 +198,8 @@ class _SavingsChartState extends State<SavingsChart> {
         border: Border(
           left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
           right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-          top: BorderSide(color: Colors.transparent),
-          bottom: BorderSide(color: Colors.transparent),
+          top: const BorderSide(color: Colors.transparent),
+          bottom: const BorderSide(color: Colors.transparent),
         ),
       ),
       minX: 0,

@@ -1,10 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/login_screen.dart';
-import 'package:flutter_finance_app/screens/main_scaffold_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -44,10 +43,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Future<void> signInWithGoogle() async {
     try {
       UserCredential userCredential = await Auth().signInWithGoogle();
-      User? user = userCredential.user;
-      print(userCredential.user?.displayName);
-      print(userCredential.user?.email);
-      print(userCredential.user?.uid);
+      if (kDebugMode) {
+        print(userCredential.user?.displayName);
+        print(userCredential.user?.email);
+        print(userCredential.user?.uid);
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
@@ -90,10 +90,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     "assets/images/vector1.png",
                     fit: BoxFit.contain,
                   )
-              ) : SizedBox(),
+              ) : const SizedBox(),
               // Contenuti della schermata
               Center(
-                  child: Container(
+                  child: SizedBox(
                       width: 400,
                       child: SingleChildScrollView(
                           child: Padding(
@@ -119,7 +119,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         padding: const EdgeInsets.only(right: 10),
                                         child: Image.asset('assets/images/google.png', height: 24.0),
                                       )
-                                          : SizedBox(),
+                                          : const SizedBox(),
                                       // Assicurati di avere questa immagine in assets
                                       label: _loading
                                           ? const SizedBox(
@@ -223,7 +223,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                             child: Icon(Icons.lock, color: AppColors.textColor)
                                         ),
                                         suffixIcon: Padding(
-                                          padding: EdgeInsets.only(left: 20, right: 12),
+                                          padding: const EdgeInsets.only(left: 20, right: 12),
                                           child: IconButton(
                                             icon: const Icon(Icons.visibility, color: AppColors.textColor),
                                             onPressed: () {
@@ -249,15 +249,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                             padding: const EdgeInsets.symmetric(vertical: 16)
                                         ),
                                         onPressed: handleSubmitWithCredentials,
-                                        /*
-                                      onPressed: () {
-                                        // Se l'autenticazione ha successo:
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => const MainScaffoldScreen(initialIndex: 0,)),
-                                        );
-                                      },
-                                      */
                                         child: _loading
                                           ? const SizedBox(
                                               width: 20,
@@ -292,7 +283,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           ),
                                           onPressed: () {
                                             Navigator.of(context).push(MaterialPageRoute(
-                                                builder: (context) => LoginScreen()
+                                                builder: (context) => const LoginScreen()
                                             ));
                                           },
                                           child: const Text(

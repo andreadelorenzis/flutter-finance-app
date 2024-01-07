@@ -1,14 +1,11 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
-import 'package:flutter_finance_app/constants/data.dart';
 import 'package:flutter_finance_app/constants/months.dart';
 import 'package:flutter_finance_app/screens/budget_month_screen.dart';
 import 'package:flutter_finance_app/widgets/savings_line_chart.dart';
-import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'choose_budget_period_screen.dart';
 
@@ -17,9 +14,8 @@ class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
 
   @override
-  _BudgetScreenState createState() => _BudgetScreenState();
+  State<BudgetScreen> createState() => _BudgetScreenState();
 }
-
 
 class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserver {
   bool isPlanCreated = false;
@@ -30,7 +26,6 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
   late ValueNotifier<List<Map<String, dynamic>>> monthlyBalances;
   late ValueNotifier<List<List<Map<String, dynamic>>>> deposits;
   late ValueNotifier<List<List<Map<String, dynamic>>>> expenses;
-  // late ValueNotifier<Map<String, List<dynamic>>> fixedTransactions;
   late Future<void> budgetDataFuture;
 
   @override
@@ -42,19 +37,15 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     startDate = ValueNotifier(DateTime.now());
     endDate = ValueNotifier(DateTime.now());
     initialBalance = ValueNotifier(0);
-    /*
-     fixedTransactions = ValueNotifier({
-      'deposits': [],
-      'expenses': []
-    });
-    * */
     budgetDataFuture = fetchBudgetData();
   }
 
   Future<void> fetchBudgetData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("Utente non autenticato");
+      if (kDebugMode) {
+        print("User not authenticated");
+      }
       return;
     }
 
@@ -77,9 +68,10 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
           isPlanCreated = false;
         });
       }
-      print(isPlanCreated);
     } catch (e) {
-      print("Errore durante il recupero del piano di budget: $e");
+      if (kDebugMode) {
+        print("Error while trying to get budget data: $e");
+      }
       setState(() {
         isPlanCreated = false;
       });
@@ -95,7 +87,6 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     return yearDiff * 12 + monthDiff;
   }
 
-
   void updatePlan(var budgetData) {
     if (budgetData == null) {
       return;
@@ -108,7 +99,6 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     Map<String, dynamic> fixedTransactions = budgetData['fixedTransactions'];
 
     int months = calculateMonthsBetween(startDate.value, endDate.value);
-    print(months);
 
     deposits.value = List.generate(months, (_) => []);
     expenses.value = List.generate(months, (_) => []);
@@ -135,7 +125,6 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
 
     while (currentDate.year < endDate.value.year ||
         (currentDate.year == endDate.value.year && currentDate.month <= endDate.value.month)) {
-      print("${currentDate.month} - ${currentDate.year}");
       monthsBetween.add("${Months.getFull(currentDate.month - 1)} ${currentDate.year}");
       currentDate = (currentDate.month < 12)
           ? DateTime(currentDate.year, currentDate.month + 1, currentDate.day)
@@ -143,12 +132,9 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     }
     monthlyEarnings = monthsBetween.map((month) => {month: 0.0}).toList();
 
-
-    print(monthsBetween.length);
-
     // Aggiorna le transazioni mensili
     int i = 0;
-    var uuid = Uuid();
+    var uuid = const Uuid();
     currentDate = startDate.value;
     while (currentDate.isBefore(endDate.value) || currentDate.isAtSameMomentAs(endDate.value)) {
       String monthKey = '${currentDate.year}-${currentDate.month.toString().padLeft(2, '0')}';
@@ -202,7 +188,6 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
       isPlanCreated = true;
     });
 
-    print("Stato BudgetScreen aggiornato!");
   }
 
   double getTotal(List<Map<String, dynamic>> transactions) {
@@ -220,68 +205,26 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
 
     return Column(
       children: [
-        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(height: 10),
-        Text("€${balance?.toStringAsFixed(2)}",
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        Text("€${balance.toStringAsFixed(2)}",
             style: TextStyle(
                 fontSize: 22,
                 fontWeight:
                 FontWeight.w500,
                 color: color
             )),
-        SizedBox(height: 5),
-        Text("${date.day}/${date.month}/${date.year}", style: TextStyle(fontSize: 16, color: Colors.grey)),
+        const SizedBox(height: 5),
+        Text("${date.day}/${date.month}/${date.year}", style: const TextStyle(fontSize: 16, color: Colors.grey)),
       ],
     );
-  }
-
-  void addMockBudgetData() async {
-    // Prendi l'ID utente
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      print("Utente non autenticato");
-      return;
-    }
-    String userId = user.uid;
-
-    // Preparazione dei dati di budget
-    List<Map<String, dynamic>> octoberBudgetTransactions = Data.octoberBudgetTransactions; // Dati di ottobre
-    List<Map<String, dynamic>> novemberBudgetTransactions = Data.novemberBudgetTransactions; // Dati di novembre
-    List<Map<String, dynamic>> decemberBudgetTransactions = Data.decemberBudgetTransactions; // Dati di dicembre
-
-    var uuid = Uuid();
-    void addUuid(List<Map<String, dynamic>> transactions) {
-      for (var transaction in transactions) {
-        transaction['id'] = uuid.v4(); // Aggiunge un UUID univoco
-      }
-    }
-    addUuid(octoberBudgetTransactions);
-    addUuid(novemberBudgetTransactions);
-    addUuid(decemberBudgetTransactions);
-
-    // Aggiungi i dati al Firestore
-    DocumentReference budgetRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('budget')
-        .doc('monthlyBudget');
-
-    await budgetRef.set({
-      'monthlyTransactions': {
-        '2023-10': octoberBudgetTransactions,
-        '2023-11': novemberBudgetTransactions,
-        '2023-12': decemberBudgetTransactions,
-      },
-    }, SetOptions(merge: true));
-
-    print("Dati di budget di esempio aggiunti");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Center(child: Text('Budgeting', style: TextStyle(
+          title: const Center(child: Text('Budgeting', style: TextStyle(
               color: AppColors.pureBlack, fontWeight: FontWeight.w800, fontSize: 25
           ),),)
       ),
@@ -289,7 +232,7 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
         future: budgetDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'),);
           } else {
@@ -316,7 +259,7 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
             fetchBudgetData();
           });
         },
-        child: Icon(Icons.edit),
+        child: const Icon(Icons.edit),
       ) : null,
     );
   }
@@ -329,8 +272,8 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("No budget available", style: TextStyle(fontSize: 18),),
-          SizedBox(height: 20,),
+          const Text("No budget available", style: TextStyle(fontSize: 18),),
+          const SizedBox(height: 20,),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
@@ -352,8 +295,8 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
                 fetchBudgetData();
               });
             },
-            child: Text(
-              'Crea Piano',
+            child: const Text(
+              'Create budget',
               style: TextStyle(
                   fontWeight: FontWeight.w900,
                   color: AppColors.pureBlack,
@@ -395,27 +338,27 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildBalanceInfo(
-                  "Inizio",
+                  "Start",
                   monthlyBalances.value[0]['balance']!,
                   startDate.value,
                 ),
                 Icon(Icons.arrow_forward, size: isWideScreen ? 50 : 30),
                 _buildBalanceInfo(
-                    "Fine",
+                    "End",
                     monthlyBalances.value[monthlyBalances.value.length - 1]['balance']!,
                     endDate.value,
                     compare: compareBalances(monthlyBalances.value[monthlyBalances.value.length - 1]['balance']!, monthlyBalances.value[0]['balance']!)
                 ),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Container(
               height: 200,
               color: Colors.white,
               child: Center(child: SavingsChart(monthlyBalances: monthlyBalances.value,)),
             ),
-            SizedBox(height: 30),
-            Text("Risultati Mensili", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 30),
+            const Text("Monthly results", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             // Placeholder per i risultati mensili
             ...monthlyEarnings.map((earnings) {
               return ListTile(

@@ -1,7 +1,6 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/choose_budget_period_screen.dart';
@@ -15,11 +14,12 @@ class BudgetMonthScreen extends StatefulWidget {
   final ValueNotifier<DateTime> endDate;
   final ValueNotifier<double> initialBalance;
   final Function onDataUpdated;
-  ValueNotifier<List<Map<String, dynamic>>> monthlyBalances;
-  ValueNotifier<List<List<Map<String, dynamic>>>> deposits;
-  ValueNotifier<List<List<Map<String, dynamic>>>> expenses;
+  final ValueNotifier<List<Map<String, dynamic>>> monthlyBalances;
+  final ValueNotifier<List<List<Map<String, dynamic>>>> deposits;
+  final ValueNotifier<List<List<Map<String, dynamic>>>> expenses;
 
-  BudgetMonthScreen({
+  const BudgetMonthScreen({
+    super.key,
     required this.startDate,
     required this.endDate,
     required this.initialBalance,
@@ -30,11 +30,11 @@ class BudgetMonthScreen extends StatefulWidget {
   });
 
   @override
-  _BudgetMonthScreenState createState() => _BudgetMonthScreenState();
+  State<BudgetMonthScreen> createState() => _BudgetMonthScreenState();
 }
 
 class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   late Future<void> budgetDataFuture;
 
   OverlayEntry? editingAppBarOverlay;
@@ -81,7 +81,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
                 left: 0,
                 right: 0,
                 child: AppBar(
-                  title: const Text('Seleziona transazioni'),
+                  title: const Text('Select transactions'),
                   actions: [
                     if (selectedTransactions.length == 1)
                       IconButton(icon: const Icon(Icons.edit), onPressed: () {
@@ -112,7 +112,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
               ),
         );
 
-        Overlay.of(context)?.insert(editingAppBarOverlay!);
+        Overlay.of(context).insert(editingAppBarOverlay!);
       },
       onCheckboxChange: (bool newValue, String transactionId) {
         setState(() {
@@ -187,7 +187,6 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   Future<void> saveNewBudgetTransaction(Map<String, dynamic> transactionData) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("Utente non autenticato");
       return;
     }
 
@@ -199,7 +198,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         .doc('monthlyBudget');
 
     try {
-      var uuid = Uuid();
+      var uuid = const Uuid();
 
       if (!transactionData['isFixed']) {
         // Genera un id univoco per la transazione
@@ -230,14 +229,18 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
       }
       await widget.onDataUpdated();
     } catch (e) {
-      print("Errore nell'aggiunta della transazione: $e");
+      if (kDebugMode) {
+        print("Error occurred while trying to add transaction: $e");
+      }
     }
   }
 
   Future<void> editBudgetTransaction(Map<String, dynamic> transactionData) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("Utente non autenticato");
+      if (kDebugMode) {
+        print("User not authenticated");
+      }
       return;
     }
     String userId = user.uid;
@@ -293,14 +296,18 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         await widget.onDataUpdated();
       }
     } catch (e) {
-      print("Errore nella modifica della transazione: $e");
+      if (kDebugMode) {
+        print("An error occurred trying to update the transaction: $e");
+      }
     }
   }
 
   Future<void> deleteTransactions() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("Utente non autenticato");
+      if (kDebugMode) {
+        print("User not authenticated");
+      }
       return;
     }
     String userId = user.uid;
@@ -313,12 +320,10 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         .doc('monthlyBudget');
 
     bool hasFixedTransactions = false;
-    Map<String, dynamic> fixedTransaction = {};
     for (String transactionId in selectedTransactions) {
       var transaction = _findTransactionByKey(transactionId, pageIndex);
       if (transaction['isFixed']) {
         hasFixedTransactions = true;
-        fixedTransaction = transaction;
         break;
       }
     }
@@ -328,16 +333,16 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Attenzione!'),
-              content: Text("La transazione fissa verrà eliminata da tutti i mesi. Procedere?"),
+              title: const Text('Warning!'),
+              content: const Text("Fixed transaction will be removed for all the months. Continue?"),
               actions: <Widget>[
                 ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: Text("No")
+                    child: const Text("No")
                 ),
                 ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: Text("Si")
+                    child: const Text("Yes")
                 ),
               ],
             );
@@ -384,7 +389,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           'fixedTransactions': fixedTransactions
         });
 
-        // Rimuove le transazioni fisse
+        // TODO: Rimuove le transazioni fisse
 
         // Aggiornamento locale e ricarica dei dati
         await widget.onDataUpdated();
@@ -395,14 +400,18 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         hideEditingAppBar();
       }
     } catch (e) {
-      print("Errore nell'eliminazione delle transazioni: $e");
+      if (kDebugMode) {
+        print("Error while trying to remove transactions: $e");
+      }
     }
   }
 
   Future<void> changeBudgetPeriodFuture(Map<String, dynamic> periodData) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("Utente non autenticato");
+      if (kDebugMode) {
+        print("User not authenticated");
+      }
       return;
     }
     String userId = user.uid;
@@ -417,7 +426,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
       DocumentSnapshot snapshot = await transaction.get(budgetRef);
 
       if (!snapshot.exists) {
-        throw Exception("Documento di budget non trovato");
+        throw Exception("Firestore budget document not found");
       }
 
       // Ottieni i dati attuali del budget
@@ -431,7 +440,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         'initialBalance': periodData['initialBalance'],
       });
 
-      // Ricostruisci la struttura dei mesi
+      // Ricostruisce la struttura dei mesi
       DateTime startDate = (periodData['startDate'] as Timestamp).toDate();
       DateTime endDate = (periodData['endDate'] as Timestamp).toDate();
       Map<String, dynamic> newMonthlyTransactions = {};
@@ -450,7 +459,9 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         'monthlyTransactions': newMonthlyTransactions
       });
     }).catchError((error) {
-      print("Errore durante l'aggiornamento del periodo di budget: $error");
+      if (kDebugMode) {
+        print("Error while trying to update budget period: $error");
+      }
     });
   }
 
@@ -469,7 +480,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         title: const Text('Financial plan'),
         actions: [
           IconButton(
-          icon: Icon(Icons.calendar_today),
+          icon: const Icon(Icons.calendar_today),
             onPressed: () {
               Navigator.push(
                 context,
@@ -517,22 +528,22 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
                               Center(
                                 child: Text(
                                   formattedDate,
-                                  style: TextStyle(fontSize: 21, color: AppColors.pureBlack, fontWeight: FontWeight.w600),
+                                  style: const TextStyle(fontSize: 21, color: AppColors.pureBlack, fontWeight: FontWeight.w600),
                                 ),
                               ),
-                              SizedBox(height: 30,),
-                              Text(
+                              const SizedBox(height: 30,),
+                              const Text(
                                 "BALANCE",
                                 style: TextStyle(fontSize: 21, color: AppColors.textColor2, fontWeight: FontWeight.w600),
                               ),
                               Padding(
-                                  padding: EdgeInsets.only(top: 5, bottom: 40),
+                                  padding: const EdgeInsets.only(top: 5, bottom: 40),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         '${balance.toStringAsFixed(2)}€',
-                                        style: TextStyle(fontSize: 36, color: AppColors.pureBlack, fontWeight: FontWeight.w700),
+                                        style: const TextStyle(fontSize: 36, color: AppColors.pureBlack, fontWeight: FontWeight.w700),
                                       ),
                                       ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
                                         valueListenable: widget.deposits,
@@ -587,8 +598,8 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text("Deposits", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ...monthDeposits.map<Widget>((transaction) => _buildTransactionItem(transaction, index)).toList(),
+            const Text("Deposits", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...monthDeposits.map<Widget>((transaction) => _buildTransactionItem(transaction, index)),
             const SizedBox(height: 15),
             Align(
               alignment: Alignment.bottomRight,
@@ -608,8 +619,8 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text("Expenses", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ...monthExpenses.map<Widget>((transaction) => _buildTransactionItem(transaction, index)).toList(),
+            const Text("Expenses", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...monthExpenses.map<Widget>((transaction) => _buildTransactionItem(transaction, index)),
             const SizedBox(height: 15),
             Align(
               alignment: Alignment.bottomRight,
@@ -620,7 +631,5 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
       },
     );
   }
-
-
 
 }

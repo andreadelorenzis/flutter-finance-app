@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
-import 'package:flutter_finance_app/constants/data.dart';
 import 'package:flutter_finance_app/screens/transaction_editor.dart';
-import 'package:flutter_finance_app/widgets/savings_line_chart.dart';
 import 'package:flutter_finance_app/widgets/transaction_item.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -14,7 +12,7 @@ class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
   @override
-  _HistoryScreenState createState() => _HistoryScreenState();
+  State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
@@ -36,7 +34,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<Map<String, dynamic>> fetchHistoryData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      throw Exception('Utente non autenticato');
+      throw Exception('User not authenticated');
     }
 
     String userId = user.uid;
@@ -48,7 +46,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         .get();
 
     if (!userDoc.exists) {
-      throw Exception("Documento utente non trovato.");
+      throw Exception("Firestore user document not found");
     }
 
     double balance = (userDoc.data() as Map<String, dynamic>)['balance']?.toDouble() ?? 0.0;
@@ -80,7 +78,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
 
-    Overlay.of(context)?.insert(editingAppBarOverlay!);
+    Overlay.of(context).insert(editingAppBarOverlay!);
   }
 
   void hideEditingAppBar() {
@@ -90,7 +88,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   void dispose() {
-    hideEditingAppBar(); // Assicurati di rimuovere l'OverlayEntry quando non è più necessario
+    hideEditingAppBar();
     super.dispose();
   }
 
@@ -120,10 +118,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  AppBar _buildNormalAppBar() {
-    return AppBar(title: const Text('Home'));
-  }
-
   Map<String, dynamic> _findTransactionByKey(String key) {
     for (var transaction in transactions) {
       String transactionKey = transaction['id'];
@@ -138,7 +132,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   AppBar _buildEditingAppBar() {
     return AppBar(
-      title: const Text('Seleziona transazioni'),
+      title: const Text('Select transactions'),
       actions: [
         if (selectedTransactions.length == 1)
           IconButton(icon: const Icon(Icons.edit), onPressed: () {
@@ -205,7 +199,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ? currentBalance - transactionAmount
           : currentBalance + transactionAmount;
 
-      var uuid = Uuid();
+      var uuid = const Uuid();
       String transactionId = uuid.v4();
       transactionData['id'] = transactionId;
 
@@ -217,7 +211,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       transactionsFuture = fetchHistoryData();
       setState(() {});
     }).catchError((e) {
-      print("Errore nell'aggiunta della transazione: $e");
+      if (kDebugMode) {
+        print("Error while trying to add the transaction: $e");
+      }
     });
   }
   
@@ -245,15 +241,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         double updatedAmount = transactionData['amount'];
         double amountDifference = updatedAmount - originalAmount;
 
-        print(originalAmount);
-        print(updatedAmount);
-        print(amountDifference);
-
         // Aggiorna il bilancio
         double updatedBalance = transactionData['method'] == 'Payment'
             ? currentBalance - amountDifference
             : currentBalance + amountDifference;
         transaction.update(userDocRef, {'balance': updatedBalance});
+
         // Aggiorna la transazione
         transaction.update(transactionDocument.reference, transactionData);
       }
@@ -263,14 +256,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
       transactionsFuture = fetchHistoryData();
       setState(() {});
     }).catchError((e) {
-      print("Errore nell'aggiornamento della transazione: $e");
+      if (kDebugMode) {
+        print("Error while trying to update the transaction: $e");
+      }
     });
   }
 
   Future<void> deleteTransactions() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("Utente non autenticato");
+      if (kDebugMode) {
+        print("User not authenticated");
+      }
       return;
     }
     String userId = user.uid;
@@ -315,51 +312,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
       });
       hideEditingAppBar();
       transactionsFuture = fetchHistoryData();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Transazioni selezionate eliminate.'),
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Selected transactions deleted'),
       ));
     }).catchError((e) {
-      print("Errore nell'eliminazione delle transazioni: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Errore nell\'eliminazione delle transazioni.'),
+      if (kDebugMode) {
+        print("Error while trying to delete the transactions: $e");
+      }
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Error while trying to delete transactions'),
       ));
     });
-  }
-
-
-  Future<void> addMockTransactionsToFirestore() async {
-
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
-
-    String userId = user.uid;
-    CollectionReference transactionsCollection = FirebaseFirestore.instance.collection('users').doc(userId).collection('transactions');
-
-    final List<Map<String, dynamic>> mockTransactions = Data.transactions;
-
-    var uuid = Uuid();
-    void addUuid(List<Map<String, dynamic>> transactions) {
-      for (var transaction in transactions) {
-        transaction['id'] = uuid.v4();
-      }
-    }
-    addUuid(mockTransactions);
-
-    for (var transaction in mockTransactions) {
-      DateTime parsedDate = DateTime.parse(transaction['date']);
-      double parsedAmount = double.tryParse(transaction['amount'].replaceAll('€', '')) ?? 0.0;
-      Map<String, dynamic> firestoreData = {
-        'type': transaction['type'],
-        'amount': parsedAmount,
-        'method': transaction['method'],
-        'name': transaction['name'],
-        'date': Timestamp.fromDate(parsedDate),
-        'id': transaction['id']
-      };
-      await transactionsCollection.add(firestoreData);
-    }
   }
 
   @override
@@ -367,7 +330,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('Transactions', style: TextStyle(
+        title: const Center(child: Text('Transactions', style: TextStyle(
             color: AppColors.pureBlack, fontWeight: FontWeight.w800, fontSize: 25
         ),),)
       ),
@@ -375,11 +338,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
         future: transactionsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: AppColors.black,));
+            return const Center(child: CircularProgressIndicator(color: AppColors.black,));
           } else if (snapshot.hasError) {
-            return Center(child: Text('Errore nel caricamente delle transazioni'));
+            return const Center(child: Text('Error while trying to load transactions'));
           } else if (!snapshot.hasData || snapshot.data!['transactions'].isEmpty) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -424,10 +387,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 6.0),
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
                   child: Text(
-                    '${balance} €',
-                    style: TextStyle(
+                    '$balance €',
+                    style: const TextStyle(
                         fontSize: 36.0,
                         fontWeight:
                         FontWeight.w900
@@ -441,9 +404,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold),
                   ),
                 ),
-                !transactions.isEmpty
-                  ? Container(
-                  child: ListView(
+                transactions.isNotEmpty
+                  ? ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     children: groupedTransactions.entries.map<Widget>((entry) {
@@ -461,14 +423,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               ),
                             ),
                           ),
-                          ...entry.value.map((transaction) => _buildTransactionItem(transaction)).toList(),
+                          ...entry.value.map((transaction) => _buildTransactionItem(transaction)),
                           const SizedBox(height: 15)
                         ],
                       );
                     }).toList(),
-                  ),
-                )
-                : Center(child: Text('Nessuna transazione'),)
+                  )
+                : const Center(child: Text('No transactions'),)
               ],
             );
           }

@@ -43,7 +43,7 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
   Future<List<Map<String, dynamic>>> _loadTransactions() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      throw Exception('Utente non autenticato');
+      throw Exception('User not authenticated');
     }
 
     String userId = user.uid;
@@ -61,8 +61,6 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
     setState(() {
       numberOfMonths += tabPaginationInterval;
       int currentIndex = _tabController?.index ?? numberOfMonths;
-      print(currentIndex);
-      print(_tabController?.length);
       _tabController?.dispose();
       _tabController = TabController(length: numberOfMonths, vsync: this, initialIndex: currentIndex + tabPaginationInterval);
     });
@@ -86,7 +84,7 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
   }
 
   Widget appBarEmptyTransactionsTitle() {
-    return Center(child: Text('Transactions', style: TextStyle(
+    return const Center(child: Text('Transactions', style: TextStyle(
         color: AppColors.pureBlack, fontWeight: FontWeight.w800, fontSize: 25
     ),),);
   }
@@ -99,15 +97,12 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: selectedOption,
-                underline: Container(), // Rimuove la linea sottostante
-                icon: Icon(Icons.arrow_drop_down, color: Colors.black), // Icona con colore personalizzato
-                style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w800), // Stile del testo
+                underline: Container(),
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+                style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w800),
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedOption = newValue ?? 'Expenses';
-                    if (selectedOption == 'Deposits') {
-                      print('Deposits selected');
-                    }
                   });
                 },
                 selectedItemBuilder: (BuildContext context) {
@@ -115,8 +110,8 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
                     return Align(
                       alignment: Alignment.center,
                       child: Text(
-                        selectedOption ?? 'Expenses',
-                        style: TextStyle(
+                        selectedOption,
+                        style: const TextStyle(
                           fontSize: 25,
                           color: Colors.black,
                           fontWeight: FontWeight.w800,
@@ -135,10 +130,10 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
             )
         ),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(50),
+          preferredSize: const Size.fromHeight(50),
           child: TabBar(
             controller: _tabController,
-            labelStyle: TextStyle(
+            labelStyle: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold
             ),
@@ -162,7 +157,7 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
                 onTap: () {
                   _pageController.animateToPage(
                     index,
-                    duration: Duration(milliseconds: 150),
+                    duration: const Duration(milliseconds: 150),
                     curve: Curves.easeIn,
                   );
                 },
@@ -171,11 +166,11 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       index == numberOfMonths - 1
-                        ? Padding(padding: EdgeInsets.only(right: 20), child: IconButton(
-                            icon: Icon(Icons.add),
+                        ? Padding(padding: const EdgeInsets.only(right: 20), child: IconButton(
+                            icon: const Icon(Icons.add),
                             onPressed: addMoreMonths,
                           ) ,)
-                        : SizedBox(),
+                        : const SizedBox(),
                       Text(formattedDate)
                     ],
                   ),
@@ -190,9 +185,9 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
         future: transactionsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: AppColors.black,));
+            return const Center(child: CircularProgressIndicator(color: AppColors.black,));
           } else if (snapshot.hasError) {
-            return Center(child: Text('Errore nel caricamente delle transazioni'));
+            return const Center(child: Text('Error while trying to load transactions'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
 
           }
@@ -215,7 +210,7 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
               Map<String, double> categories = categorizedTransactions[monthKey] ?? {};
 
               if (categories.isEmpty) {
-                return Center(
+                return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -230,18 +225,18 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
 
               List<Widget> categoryWidgets = categories.entries.map((entry) {
                 double percentage = (entry.value / totalAmount) * 100;
-                Widget icon = Data.transactionTypes[entry.key]?['icon'] ?? SizedBox();
+                Widget icon = Data.transactionTypes[entry.key]?['icon'] ?? const SizedBox();
                 Color color = Data.transactionTypes[entry.key]?['color'] ?? Colors.grey;
 
                 return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Row(
                     children: [
                       CircleAvatar(
                         backgroundColor: color.withOpacity(0.25),
                         child: icon,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,11 +248,11 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
                                 Text('${percentage.toStringAsFixed(1)}%'),
                               ],
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             LinearProgressIndicator(
                               value: percentage / 100,
                               backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                             ),
                           ],
                         ),
@@ -278,14 +273,12 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
                   alignment: Alignment.topCenter,
                   child: Column(
                     children: [
-                      Container(
-                        child: Center(child: PieChartSample2(
-                          categories: categorizedTransactions[monthKey] ?? {},
-                        )),
-                      ),
-                      SizedBox(height: 20,),
-                      Divider(),
-                      SizedBox(height: 20,),
+                      Center(child: PieChartSample2(
+                        categories: categorizedTransactions[monthKey] ?? {},
+                      )),
+                      const SizedBox(height: 20,),
+                      const Divider(),
+                      const SizedBox(height: 20,),
                       Column(children: categoryWidgets,),
                     ],
                   ),

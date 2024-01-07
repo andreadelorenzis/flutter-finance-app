@@ -15,15 +15,15 @@ class MainScaffoldScreen extends StatefulWidget {
   final String ?image;
 
   const MainScaffoldScreen({
-    Key? key,
+    super.key,
     required this.name,
     required this.email,
     required this.image,
     this.initialIndex = 0
-  }) : super(key: key);
+  });
 
   @override
-  _MainScaffoldScreenState createState() => _MainScaffoldScreenState();
+  State<MainScaffoldScreen> createState() => _MainScaffoldScreenState();
 }
 
 class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
@@ -36,9 +36,9 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     super.initState();
     _selectedIndex = widget.initialIndex;
     _widgetOptions = <Widget>[
-      HistoryScreen(),
-      ChartsScreen(),
-      BudgetScreen(),
+      const HistoryScreen(),
+      const ChartsScreen(),
+      const BudgetScreen(),
       ProfileScreen(name: widget.name, email: widget.email,),
     ];
   }
@@ -62,7 +62,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       appBar: isWideScreen ? AppBar(
-        title: const Text('Finance App'),
+        title: const Text('Budget Buddy'),
       ) : null,
       drawer: isWideScreen ? Drawer(
         child: Column(
@@ -84,43 +84,43 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
                           image: DecorationImage(
                             image: widget.image != null
                                 ? NetworkImage(widget.image!) as ImageProvider
-                                : AssetImage("assets/images/avatar.png"),
+                                : const AssetImage("assets/images/avatar.png"),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
                     ),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: AppColors.primaryColor
                     ),
                   ),
                   ListTile(
-                    leading: ImageIcon(AssetImage("assets/images/list.png")),
-                    title: Text('History'),
+                    leading: const ImageIcon(AssetImage("assets/images/list.png")),
+                    title: const Text('History'),
                     onTap: () {
                       _onItemTapped(0);
                       Navigator.pop(context);
                     },
                   ),
                   ListTile(
-                    leading: ImageIcon(AssetImage("assets/images/pie-chart.png")),
-                    title: Text('Charts'),
+                    leading: const ImageIcon(AssetImage("assets/images/pie-chart.png")),
+                    title: const Text('Charts'),
                     onTap: () {
                       _onItemTapped(1);
                       Navigator.pop(context);
                     },
                   ),
                   ListTile(
-                    leading: ImageIcon(AssetImage("assets/images/calculator.png")),
-                    title: Text('Budget'),
+                    leading: const ImageIcon(AssetImage("assets/images/calculator.png")),
+                    title: const Text('Budget'),
                     onTap: () {
                       _onItemTapped(2);
                       Navigator.pop(context);
                     },
                   ),
                   ListTile(
-                    leading: ImageIcon(AssetImage("assets/images/Person.png")),
-                    title: Text('Person'),
+                    leading: const ImageIcon(AssetImage("assets/images/Person.png")),
+                    title: const Text('Person'),
                     onTap: () {
                       _onItemTapped(3);
                       Navigator.pop(context);
@@ -129,12 +129,12 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
                 ],
               ),
             ),
-            Divider(),
+            const Divider(),
             Padding(
-              padding: EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 10),
               child: ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout'),
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
                 onTap: () {
                   Navigator.pop(context);
                   signOut();

@@ -3,7 +3,6 @@ import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/account_info_screen.dart';
 import 'package:flutter_finance_app/screens/change_password_screen.dart';
-import 'package:flutter_finance_app/screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String ?name;
@@ -37,12 +36,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: AppColors.primaryColor,
             size: 30
           ),
-          SizedBox(width: 25,),
+          const SizedBox(width: 25,),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(text, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.pureBlack),),
-              text2 != null ? Text(text2!, style: TextStyle(fontSize: 13, color: AppColors.textColor2),) : SizedBox()
+              Text(text, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.pureBlack),),
+              text2 != null ? Text(text2, style: const TextStyle(fontSize: 13, color: AppColors.textColor2),) : const SizedBox()
             ],
           )
         ],
@@ -72,16 +71,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     widget.name ?? '',
-                    style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700, color: AppColors.pureBlack),
+                    style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700, color: AppColors.pureBlack),
                   ),
                   Text(
                     widget.email ?? '',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textColor2),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textColor2),
                   )
                 ],
               ),
             ),
-            SizedBox(height: 30,),
+            const SizedBox(height: 30,),
             menuButton(
               text: 'Account information',
               text2: 'Change your account information',
@@ -92,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ));
               }
             ),
-            SizedBox(height: 10,),
+            const SizedBox(height: 10,),
             menuButton(
                 text: 'Password',
                 text2: 'Change your password',
@@ -103,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ));
                 }
             ),
-            SizedBox(height: 10,),
+            const SizedBox(height: 10,),
             menuButton(
                 text: 'Logout',
                 text2: null,

@@ -16,7 +16,6 @@ class AccountInfoScreen extends StatefulWidget {
 }
 
 class _AccountInfoScreenState extends State<AccountInfoScreen> {
-  bool _loading = false;
   final _formKey = GlobalKey<FormState>();
   String? errorMessage = '';
   final TextEditingController _controllerName = TextEditingController();
@@ -24,6 +23,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
 
   @override
   void initState() {
+    super.initState();
     _controllerName.text = widget.name!;
     _controllerEmail.text = widget.email!;
   }
@@ -32,10 +32,10 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Edit information"),
+        title: const Text("Edit information"),
         actions: [
           IconButton(
-            icon: Icon(Icons.check),
+            icon: const Icon(Icons.check),
             onPressed: () {
               Navigator.of(context)
                 .pop(true);
@@ -79,7 +79,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 ),
                 keyboardType: TextInputType.text,
               ),
-              SizedBox(height: 20,),
+              const SizedBox(height: 20,),
               TextFormField(
                 controller: _controllerEmail,
                 validator: (value) {

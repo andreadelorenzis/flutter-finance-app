@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/screens/login_screen.dart';
-import 'package:flutter_finance_app/screens/registration_screen.dart';
 import 'package:flutter_finance_app/screens/main_scaffold_screen.dart';
 
 class WidgetTree extends StatefulWidget {
@@ -21,11 +21,13 @@ class _WidgetTreeState extends State<WidgetTree> {
       if (!userDoc.exists) {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': user.email,
-          'balance': 0, // o altri dati iniziali
+          'balance': 0,
         });
       }
     } catch (e) {
-      print("Errore nella creazione dell'utente in Firestore: $e");
+      if (kDebugMode) {
+        print("Error while trying to create user in Firestore: $e");
+      }
     }
   }
 
@@ -35,18 +37,15 @@ class _WidgetTreeState extends State<WidgetTree> {
       stream: Auth().authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          // Esegui la logica di controllo e creazione dell'utente qui
           return FutureBuilder(
             future: _checkAndCreateUser(snapshot.data!),
             builder: (context, asyncSnapshot) {
-              // Controlla lo stato del Future per gestire il caricamento o eventuali errori
               if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();  // O una schermata di caricamento
+                return const CircularProgressIndicator();
               }
               if (asyncSnapshot.hasError) {
-                return Text('Si è verificato un errore');  // Gestisci gli errori
+                return const Text('An error occured');
               }
-              // Se il Future è completato, mostra la MainScaffoldScreen
               return MainScaffoldScreen(
                   name: snapshot.data?.displayName,
                   email: snapshot.data?.email,

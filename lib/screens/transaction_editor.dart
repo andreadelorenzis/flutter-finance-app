@@ -8,18 +8,18 @@ class TransactionEditor extends StatefulWidget {
   final bool isEditing;
   final bool isBudget;
   final Function onSubmit;
-  final Map<String, dynamic>? transaction; // Null se è una nuova transazione
+  final Map<String, dynamic>? transaction;
 
   const TransactionEditor({
-    Key? key,
+    super.key,
     this.isEditing = false,
     this.isBudget = false,
     this.transaction,
     required this.onSubmit,
-  }) : super(key: key);
+  });
 
   @override
-  _TransactionEditorState createState() => _TransactionEditorState();
+  State<TransactionEditor> createState() => _TransactionEditorState();
 }
 
 class _TransactionEditorState extends State<TransactionEditor> {
@@ -28,7 +28,6 @@ class _TransactionEditorState extends State<TransactionEditor> {
   late TextEditingController _amountController;
   late DateTime _selectedDate;
   late String _selectedType;
-  String _selectedIcon = 'default_icon';
   bool _isFixed = false;
   String _transactionMethod = 'Payment';
 
@@ -39,7 +38,6 @@ class _TransactionEditorState extends State<TransactionEditor> {
     _amountController = TextEditingController(text: widget.transaction?['amount'].toString());
     if (!widget.isBudget) _selectedDate = widget.transaction?['date'] ?? DateTime.now();
     _selectedType = widget.transaction?['type'] ?? 'generic';
-    _selectedIcon = widget.transaction?['icon'] ?? 'default_icon';
     if (widget.isBudget) _isFixed = widget.transaction?['isFixed'] ?? false;
     _transactionMethod = widget.transaction?['method'] ?? 'Payment';
   }
@@ -69,14 +67,15 @@ class _TransactionEditorState extends State<TransactionEditor> {
     Navigator.pop(context, true);
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Edit Transaction' : 'Add Transaction'),
-        leading: BackButton(),
+        leading: const BackButton(),
         actions: [
           IconButton(
-            icon: Icon(Icons.check),
+            icon: const Icon(Icons.check),
             onPressed: handleSubmit
           ),
         ],
@@ -110,7 +109,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
                   },
                   trailing: const Icon(Icons.calendar_today),
                 )
-                : SizedBox(),
+                : const SizedBox(),
               if(!widget.isEditing)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -127,7 +126,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
                             });
                           },
                         ),
-                        Text('Deposit')
+                        const Text('Deposit')
                       ],
                     ),
                     Row(
@@ -141,7 +140,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
                             });
                           },
                         ),
-                        Text("Withdrawal")
+                        const Text("Withdrawal")
                       ],
                     )
                   ],
@@ -185,10 +184,10 @@ class _TransactionEditorState extends State<TransactionEditor> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                 ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -206,7 +205,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
                         items: Data.transactionTypes.keys.map((String key) {
                           return DropdownMenuItem<String>(
                             value: key,
-                            child: Text(capitalize(key), style: TextStyle(color: AppColors.pureBlack)),
+                            child: Text(capitalize(key), style: const TextStyle(color: AppColors.pureBlack)),
                           );
                         }).toList(),
                         onChanged: (String? newValue) {
@@ -221,7 +220,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
               ),
               widget.isBudget
                 ? CheckboxListTile(
-                  title: Text("Fixed"),
+                  title: const Text("Fixed"),
                     value: _isFixed,
                     onChanged: (bool? value) {
                     setState(() {
@@ -229,7 +228,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
                     });
                     },
                 )
-                : SizedBox()
+                : const SizedBox()
             ],
           ),
         ),

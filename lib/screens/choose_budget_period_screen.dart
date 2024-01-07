@@ -22,7 +22,7 @@ class ChooseBudgetPeriodScreen extends StatefulWidget {
   });
 
   @override
-  _ChooseBudgetPeriodScreenState createState() => _ChooseBudgetPeriodScreenState();
+  State<ChooseBudgetPeriodScreen> createState() => _ChooseBudgetPeriodScreenState();
 }
 
 class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
@@ -43,7 +43,7 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: isStartDate ? startDateNotifier.value ?? DateTime.now() : endDateNotifier.value ?? DateTime.now(),
+      initialDate: isStartDate ? startDateNotifier.value : endDateNotifier.value,
       firstDate: DateTime(2000),
       lastDate: DateTime(2050),
     );
@@ -64,11 +64,13 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
     }
 
     double? initialBudget = double.tryParse(budgetController.text);
-    if (startDateNotifier.value != null && endDateNotifier.value != null && initialBudget != null) {
-      await _saveBudgetData(startDateNotifier.value!, endDateNotifier.value!, initialBudget);
+    if (initialBudget != null) {
+      await _saveBudgetData(startDateNotifier.value, endDateNotifier.value, initialBudget);
     }
 
-    if (startDateNotifier.value != null && endDateNotifier.value != null && initialBudget != null) {
+    if (!mounted) return;
+
+    if (initialBudget != null) {
       initialBalanceNotifier.value = initialBudget;
       Navigator.push(
         context,
@@ -84,15 +86,13 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
           ),
         ),
       );
-    } else {
-      // messaggio di errore
     }
   }
 
   Future<void> _saveBudgetData(DateTime startDate, DateTime endDate, double initialBudget) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      throw Exception('Utente non autenticato');
+      throw Exception('User not authenticated');
     }
 
     String userId = user.uid;
@@ -138,17 +138,15 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
     }
 
     double? initialBudget = double.tryParse(budgetController.text);
-    if (startDateNotifier.value != null && endDateNotifier.value != null && initialBudget != null) {
+    if (initialBudget != null) {
       Map<String, dynamic> periodData = {
-        'startDate': Timestamp.fromDate(startDateNotifier.value!),
-        'endDate': Timestamp.fromDate(endDateNotifier.value!),
+        'startDate': Timestamp.fromDate(startDateNotifier.value),
+        'endDate': Timestamp.fromDate(endDateNotifier.value),
         'initialBalance': initialBudget
       };
 
       widget.onDataUpdated(periodData);
       Navigator.pop(context, true);
-    } else {
-      // messaggio di errore
     }
   }
 
@@ -157,11 +155,11 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Scegli Periodo Budget'),
+        title: const Text('Choose budget period'),
         actions: widget.isEditing
           ? [
               IconButton(
-                  icon: Icon(Icons.check),
+                  icon: const Icon(Icons.check),
                   onPressed: handleSubmit
               ),
             ]
@@ -175,16 +173,16 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
             Form(child: Column(
               children: [
                 ListTile(
-                  title: Text('Data Inizio: ${DateFormat('dd/MM/yyyy').format(startDateNotifier.value) ?? 'Non selezionato'}'),
-                  trailing: Icon(Icons.calendar_today),
+                  title: Text('Start date: ${DateFormat('dd/MM/yyyy').format(startDateNotifier.value)}'),
+                  trailing: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context, true),
                 ),
                 ListTile(
-                  title: Text('Data Fine: ${DateFormat('dd/MM/yyyy').format(endDateNotifier.value) ?? 'Non selezionato'}'),
-                  trailing: Icon(Icons.calendar_today),
+                  title: Text('End date: ${DateFormat('dd/MM/yyyy').format(endDateNotifier.value)}'),
+                  trailing: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context, false),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 TextFormField(
                   controller: budgetController,
                   validator: (value) {
@@ -207,9 +205,9 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 30.0)
                   ),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 !widget.isEditing
                     ? ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -220,7 +218,7 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 40)
                       ),
                       onPressed: _navigateToBudgetMonthScreen,
-                      child: Text(
+                      child: const Text(
                         'Generate',
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
@@ -229,7 +227,7 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
                         ),
                       ),
                       )
-                    : SizedBox()
+                    : const SizedBox()
               ],
             ))
           ],

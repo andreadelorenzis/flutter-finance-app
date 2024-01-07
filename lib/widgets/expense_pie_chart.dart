@@ -13,7 +13,7 @@ class PieChartSample2 extends StatefulWidget {
   });
 
   @override
-  _PieChart2State createState() => _PieChart2State();
+  State<PieChartSample2> createState() => _PieChart2State();
 }
 
 class _PieChart2State extends State<PieChartSample2> {
@@ -62,7 +62,7 @@ class _PieChart2State extends State<PieChartSample2> {
               ),
             ),
           ),
-          SizedBox(width: 20,),
+          const SizedBox(width: 20,),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +97,7 @@ class _PieChart2State extends State<PieChartSample2> {
 
       final radius = isTouched ? baseRadius * 1.2 : baseRadius;
 
-      final shadows = [Shadow(color: Colors.black, blurRadius: 2)];
+      final shadows = [const Shadow(color: Colors.black, blurRadius: 2)];
       double value = (widget.categories[categoryList[i]]! / total) * 100;
       Color color = Data.transactionTypes[categoryList[i]]?['color'];
 

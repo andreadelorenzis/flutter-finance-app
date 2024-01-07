@@ -2,15 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/firebase_options.dart';
-import 'package:flutter_finance_app/screens/profile_screen.dart';
-import 'package:flutter_finance_app/screens/budget_screen.dart';
-import 'package:flutter_finance_app/screens/history_screen.dart';
-import 'package:flutter_finance_app/screens/login_screen.dart';
-import 'package:flutter_finance_app/screens/main_scaffold_screen.dart';
-import 'package:flutter_finance_app/screens/registration_screen.dart';
-import 'package:flutter_finance_app/screens/charts_screen.dart';
-import 'package:flutter_finance_app/screens/widget_tree.dart';
-import 'package:flutter_finance_app/widgets/SplashScreen.dart';
+import 'package:flutter_finance_app/widgets/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Login Screen',
+      title: 'Budget Buddy',
       theme: ThemeData(
         textTheme: const TextTheme(
           titleMedium: TextStyle(color: Colors.red)
@@ -35,7 +27,7 @@ class MyApp extends StatelessWidget {
           labelStyle: TextStyle(color: AppColors.textColor)
         )
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }
