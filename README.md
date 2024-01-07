@@ -66,17 +66,11 @@ Una volta effettuato l'accesso all'applicazione, si viene portati alla pagina "H
 . Qui l'utente può aggiungere una nuova transazione tramite l'apposito pulsante in basso a destra. Oppure, premendo a lungo su una delle transazioni, entrerà nella modalità di
  selezione, in cui potrà selezionare una transazione da modificare o più transazioni da eliminare. 
 
-<div style="display: flex; justify-content: center">
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/history_screen.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center" style="padding-right: 30px">
-   <img src="assets/screenshots/add_transaction.png" alt="Descrizione alternativa" width="200"/>
- </p>
- <p align="center">
-   <img src="assets/screenshots/edit_transaction.png" alt="Descrizione alternativa" width="200"/>
- </p>
-</div>
+<p align="center">
+  <img src="assets/screenshots/history_screen.png" alt="Descrizione alternativa" width="200"/>
+  <img src="assets/screenshots/add_transaction.png" alt="Descrizione alternativa" width="200"/>
+  <img src="assets/screenshots/edit_transaction.png" alt="Descrizione alternativa" width="200"/>
+</p>
 
 ### Grafici
 Se sono stati aggiungi dei dati nella pagina "History", accedendo alla pagina "Charts" verrà visualizzato un grafico con lo 
