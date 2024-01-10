@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/login_screen.dart';
+import 'package:flutter_finance_app/screens/main_scaffold_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -26,17 +28,41 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     try {
       UserCredential userCredential = await Auth().createUserWithEmailAndPassword(
           email: _controllerEmail.text,
-          password: _controllerPassword.text
+          password: _controllerPassword.text,
       );
       User? user = userCredential.user;
       if (user != null) {
         await user.updateDisplayName(_controllerName.text);
         await user.reload();
+        User? updatedUser = FirebaseAuth.instance.currentUser;
+        await _checkAndCreateUser(user);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => MainScaffoldScreen(
+              name: updatedUser?.displayName, email: user.email, image: user.photoURL
+          ),
+        ));
+
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
       });
+    }
+  }
+
+  Future<void> _checkAndCreateUser(User user) async {
+    try {
+      var userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (!userDoc.exists) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': user.email,
+          'balance': 0,
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error while trying to create user in Firestore: $e");
+      }
     }
   }
 
@@ -282,7 +308,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                             padding: const EdgeInsets.all(0.0),
                                           ),
                                           onPressed: () {
-                                            Navigator.of(context).push(MaterialPageRoute(
+                                            Navigator.of(context).pushReplacement(MaterialPageRoute(
                                                 builder: (context) => const LoginScreen()
                                             ));
                                           },

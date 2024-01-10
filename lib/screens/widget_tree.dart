@@ -14,44 +14,18 @@ class WidgetTree extends StatefulWidget {
 }
 
 class _WidgetTreeState extends State<WidgetTree> {
-
-  Future<void> _checkAndCreateUser(User user) async {
-    try {
-      var userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      if (!userDoc.exists) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'email': user.email,
-          'balance': 0,
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error while trying to create user in Firestore: $e");
-      }
-    }
-  }
+  final Auth auth = Auth();
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: Auth().authStateChanges,
+      stream: auth.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return FutureBuilder(
-            future: _checkAndCreateUser(snapshot.data!),
-            builder: (context, asyncSnapshot) {
-              if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              }
-              if (asyncSnapshot.hasError) {
-                return const Text('An error occured');
-              }
-              return MainScaffoldScreen(
-                  name: snapshot.data?.displayName,
-                  email: snapshot.data?.email,
-                  image: snapshot.data?.photoURL
-              );
-            },
+          return MainScaffoldScreen(
+              name: snapshot.data?.displayName,
+              email: snapshot.data?.email,
+              image: snapshot.data?.photoURL
           );
         } else {
           return const LoginScreen();

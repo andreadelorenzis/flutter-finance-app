@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/constants/data.dart';
+import 'package:flutter_finance_app/utils/utils.dart';
 import 'package:flutter_finance_app/widgets/expense_pie_chart.dart';
 import 'package:intl/intl.dart';
 
@@ -41,12 +43,8 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
   }
 
   Future<List<Map<String, dynamic>>> _loadTransactions() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('User not authenticated');
-    }
+    String? userId = Auth().getCurrentUser()?.uid;
 
-    String userId = user.uid;
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -54,9 +52,30 @@ class _ChartsScreenState extends State<ChartsScreen> with TickerProviderStateMix
         .orderBy('date', descending: true)
         .get();
 
-    return querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> transactions = [];
+    DateTime now = DateTime.now();
+
+    for (var doc in querySnapshot.docs) {
+      Map<String, dynamic> transaction = doc.data() as Map<String, dynamic>;
+
+      if (transaction['isFixed'] != null && transaction['isFixed']) {
+        DateTime transactionDate = (transaction['date'] as Timestamp).toDate();
+        int monthDiff = Utils.calculateMonthDifference(now, transactionDate);
+
+        for (int i = 0; i <= monthDiff; i++) {
+          DateTime newDate = DateTime(now.year, now.month - i, transactionDate.day);
+          Map<String, dynamic> newTransaction = Map<String, dynamic>.from(transaction);
+          newTransaction['date'] = Timestamp.fromDate(newDate);
+          transactions.add(newTransaction);
+        }
+      } else {
+        transactions.add(transaction);
+      }
+    }
+
+    return transactions;
   }
-  
+
   void addMoreMonths() {
     setState(() {
       numberOfMonths += tabPaginationInterval;

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/constants/months.dart';
 import 'package:flutter_finance_app/screens/budget_month_screen.dart';
@@ -41,15 +42,8 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
   }
 
   Future<void> fetchBudgetData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      if (kDebugMode) {
-        print("User not authenticated");
-      }
-      return;
-    }
+    String? userId = Auth().getCurrentUser()?.uid;
 
-    String userId = user.uid;
     DocumentReference budgetRef = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/constants/data.dart';
 
@@ -38,16 +39,13 @@ class _TransactionEditorState extends State<TransactionEditor> {
     _amountController = TextEditingController(text: widget.transaction?['amount'].toString());
     if (!widget.isBudget) _selectedDate = widget.transaction?['date'] ?? DateTime.now();
     _selectedType = widget.transaction?['type'] ?? 'generic';
-    if (widget.isBudget) _isFixed = widget.transaction?['isFixed'] ?? false;
+    _isFixed = widget.transaction?['isFixed'] ?? false;
     _transactionMethod = widget.transaction?['method'] ?? 'Payment';
   }
 
   void handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
+    User? user = Auth().getCurrentUser();
 
     Map<String, dynamic> transactionData = {
       'id': widget.transaction?['id'],
@@ -56,10 +54,9 @@ class _TransactionEditorState extends State<TransactionEditor> {
       'amount': double.parse(_amountController.text),
       'type': _selectedType,
       'method': _transactionMethod,
+      'isFixed': _isFixed
     };
-    if (widget.isBudget) {
-      transactionData['isFixed'] = _isFixed;
-    } else {
+    if (!widget.isBudget) {
       transactionData['date'] = Timestamp.fromDate(_selectedDate);
     }
 
@@ -69,6 +66,9 @@ class _TransactionEditorState extends State<TransactionEditor> {
 
   @override
   Widget build(BuildContext context) {
+    Color textColor = _isFixed ? Colors.grey : Colors.black;
+    IconData iconData = _isFixed ? Icons.lock : Icons.calendar_today;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Edit Transaction' : 'Add Transaction'),
@@ -93,8 +93,11 @@ class _TransactionEditorState extends State<TransactionEditor> {
             children: [
               !widget.isBudget
                 ? ListTile(
-                  title: Text("${_selectedDate.toLocal()}".split(' ')[0]),
-                  onTap: () async {
+                  title: Text(
+                    "${_selectedDate.toLocal()}".split(' ')[0],
+                    style: TextStyle(color: textColor),
+                  ),
+                  onTap: !_isFixed ? () async {
                     DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: _selectedDate,
@@ -106,8 +109,8 @@ class _TransactionEditorState extends State<TransactionEditor> {
                         _selectedDate = picked;
                       });
                     }
-                  },
-                  trailing: const Icon(Icons.calendar_today),
+                  } : null,
+                  trailing: Icon(iconData, color: textColor),
                 )
                 : const SizedBox(),
               if(!widget.isEditing)
@@ -218,17 +221,15 @@ class _TransactionEditorState extends State<TransactionEditor> {
                   ],
                 ),
               ),
-              widget.isBudget
-                ? CheckboxListTile(
-                  title: const Text("Fixed"),
-                    value: _isFixed,
-                    onChanged: (bool? value) {
-                    setState(() {
+              CheckboxListTile(
+                title: const Text("Fixed"),
+                  value: _isFixed,
+                  onChanged: (bool? value) {
+                  setState(() {
                     _isFixed = value!;
                     });
-                    },
-                )
-                : const SizedBox()
+                  },
+              )
             ],
           ),
         ),

@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/profile_screen.dart';
 import 'package:flutter_finance_app/screens/charts_screen.dart';
 import 'package:flutter_finance_app/screens/budget_screen.dart';
 import 'package:flutter_finance_app/screens/history_screen.dart';
+import 'package:flutter_finance_app/screens/widget_tree.dart';
 
 import '../auth/auth.dart';
 
@@ -30,16 +33,25 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   late int _selectedIndex = 0;
   final User? user = Auth().currentUser;
   late List<Widget> _widgetOptions;
+  late ValueNotifier<String?> nameNotifier;
+  late ValueNotifier<String?> emailNotifier;
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+    nameNotifier = ValueNotifier(widget.name);
+    emailNotifier = ValueNotifier(widget.email);
     _widgetOptions = <Widget>[
       const HistoryScreen(),
       const ChartsScreen(),
       const BudgetScreen(),
-      ProfileScreen(name: widget.name, email: widget.email,),
+      ProfileScreen(
+        name: nameNotifier,
+        email: emailNotifier,
+        onUpdateName: updateUserName,
+        onUpdateEmail: updateUserEmail,
+      ),
     ];
   }
 
@@ -49,8 +61,20 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     });
   }
 
+  void updateUserName(String newName) {
+    nameNotifier.value = newName;
+  }
+
+  void updateUserEmail(String newEmail) {
+    emailNotifier.value = newEmail;
+  }
+
   Future<void> signOut() async {
     await Auth().signOut();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const WidgetTree()),
+          (Route<dynamic> route) => false,
+    );
   }
 
   @override

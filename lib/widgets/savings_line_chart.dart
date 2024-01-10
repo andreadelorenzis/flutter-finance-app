@@ -71,6 +71,7 @@ class _SavingsChartState extends State<SavingsChart> {
     List<FlSpot> spots = getSpotsFromBalances();
     double maxY = spots.map((spot) => spot.y).reduce(max);
     double minY = spots.map((spot) => spot.y).reduce(min);
+    double middleY = (maxY - minY) != 0 ? (maxY - minY) / 2 : 0.0;
 
     var balances = widget.monthlyBalances.map<double>((e) => e["balance"] ?? 0.0).toList();
     double maxOriginalValue = balances.isNotEmpty ? balances.reduce(max) : 0.0;
@@ -78,8 +79,9 @@ class _SavingsChartState extends State<SavingsChart> {
 
     double scaleFactor = (maxY - minY) != 0 ? (maxOriginalValue - minOriginalValue) / (maxY - minY) : 1;
     double originalValue = minOriginalValue + (value - minY) * scaleFactor;
-    String labelText;
-    if (value == minY || value == maxY) {
+    String labelText = '';
+
+    if (value == minY.round() || value == maxY.round() || value.round() == middleY.round()) {
       if (originalValue.abs() >= 10000) {
         labelText = '${(originalValue.abs() / 1000.0).round()}k';
         if (originalValue < 0) labelText = '-$labelText';

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/choose_budget_period_screen.dart';
 import 'package:flutter_finance_app/screens/transaction_editor.dart';
@@ -40,6 +41,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   OverlayEntry? editingAppBarOverlay;
   Set<String> selectedTransactions = {};
   bool isEditing = false;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -185,12 +187,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   }
 
   Future<void> saveNewBudgetTransaction(Map<String, dynamic> transactionData) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
-
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
     DocumentReference budgetRef = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -227,7 +224,9 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           'fixedTransactions.$transactionType': FieldValue.arrayUnion([transactionData])
         });
       }
+      setState(() {isLoading = true;});
       await widget.onDataUpdated();
+      setState(() {isLoading = false;});
     } catch (e) {
       if (kDebugMode) {
         print("Error occurred while trying to add transaction: $e");
@@ -236,14 +235,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   }
 
   Future<void> editBudgetTransaction(Map<String, dynamic> transactionData) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      if (kDebugMode) {
-        print("User not authenticated");
-      }
-      return;
-    }
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
 
     DocumentReference budgetRef = FirebaseFirestore.instance
         .collection('users')
@@ -293,7 +285,9 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           });
         }
 
+        setState(() {isLoading = true;});
         await widget.onDataUpdated();
+        setState(() {isLoading = false;});
       }
     } catch (e) {
       if (kDebugMode) {
@@ -303,14 +297,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   }
 
   Future<void> deleteTransactions() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      if (kDebugMode) {
-        print("User not authenticated");
-      }
-      return;
-    }
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
     int pageIndex = _pageController.page!.round();
 
     DocumentReference budgetRef = FirebaseFirestore.instance
@@ -389,10 +376,10 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           'fixedTransactions': fixedTransactions
         });
 
-        // TODO: Rimuove le transazioni fisse
-
         // Aggiornamento locale e ricarica dei dati
+        setState(() {isLoading = true;});
         await widget.onDataUpdated();
+        setState(() {isLoading = false;});
         setState(() {
           isEditing = false;
           selectedTransactions.clear();
@@ -407,14 +394,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   }
 
   Future<void> changeBudgetPeriodFuture(Map<String, dynamic> periodData) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      if (kDebugMode) {
-        print("User not authenticated");
-      }
-      return;
-    }
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
 
     DocumentReference budgetRef = FirebaseFirestore.instance
         .collection('users')
@@ -470,7 +450,9 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
     widget.startDate.value = periodData['startDate'].toDate();
     widget.endDate.value = periodData['endDate'].toDate();
     widget.initialBalance.value = periodData['initialBalance'];
+    setState(() {isLoading = true;});
     await widget.onDataUpdated();
+    setState(() {isLoading = false;});
   }
 
   @override
@@ -496,92 +478,92 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           ),
         ],
       ),
-      body: ValueListenableBuilder<DateTime>(
+      body: !isLoading ? ValueListenableBuilder<DateTime>(
         valueListenable: widget.startDate,
         builder: (context, startDate, _) {
           return ValueListenableBuilder(
-            valueListenable: widget.endDate,
-            builder: (context, endDate, _) {
-              return ValueListenableBuilder(
-                valueListenable: widget.initialBalance,
-                builder: (context, initialBalance, _) {
-                  return ValueListenableBuilder<List<Map<String, dynamic>>>(
-                    valueListenable: widget.monthlyBalances,
-                    builder: (context, monthlyBalances, _) {
-                      return PageView.builder(
-                        controller: _pageController,
-                        itemCount: monthlyBalances.length,
-                        itemBuilder: (context, index) {
-                          DateTime monthDate = DateTime(widget.startDate.value.year, widget.startDate.value.month + index);
-                          String formattedDate = DateFormat('MMMM yyyy').format(monthDate);
-                          double balance = monthlyBalances[index]['balance'] ?? 0;
+              valueListenable: widget.endDate,
+              builder: (context, endDate, _) {
+                return ValueListenableBuilder(
+                    valueListenable: widget.initialBalance,
+                    builder: (context, initialBalance, _) {
+                      return ValueListenableBuilder<List<Map<String, dynamic>>>(
+                        valueListenable: widget.monthlyBalances,
+                        builder: (context, monthlyBalances, _) {
+                          return PageView.builder(
+                            controller: _pageController,
+                            itemCount: monthlyBalances.length,
+                            itemBuilder: (context, index) {
+                              DateTime monthDate = DateTime(widget.startDate.value.year, widget.startDate.value.month + index);
+                              String formattedDate = DateFormat('MMMM yyyy').format(monthDate);
+                              double balance = monthlyBalances[index]['balance'] ?? 0;
 
-                          return ListView(
-                            padding: const EdgeInsets.only(
-                                top: 20,
-                                left: 30,
-                                right: 30,
-                                bottom: 30
-                            ),
-                            shrinkWrap: true,
-                            children: [
-                              Center(
-                                child: Text(
-                                  formattedDate,
-                                  style: const TextStyle(fontSize: 21, color: AppColors.pureBlack, fontWeight: FontWeight.w600),
+                              return ListView(
+                                padding: const EdgeInsets.only(
+                                    top: 20,
+                                    left: 30,
+                                    right: 30,
+                                    bottom: 30
                                 ),
-                              ),
-                              const SizedBox(height: 30,),
-                              const Text(
-                                "BALANCE",
-                                style: TextStyle(fontSize: 21, color: AppColors.textColor2, fontWeight: FontWeight.w600),
-                              ),
-                              Padding(
-                                  padding: const EdgeInsets.only(top: 5, bottom: 40),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '${balance.toStringAsFixed(2)}€',
-                                        style: const TextStyle(fontSize: 36, color: AppColors.pureBlack, fontWeight: FontWeight.w700),
-                                      ),
-                                      ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
-                                        valueListenable: widget.deposits,
-                                        builder: (context, deposits, _) {
-                                          return ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
-                                            valueListenable: widget.expenses,
-                                            builder: (context, expenses, _) {
-                                              double difference = getBalanceDifference(deposits[index], expenses[index]);
-                                              return Text(
-                                                '${difference >= 0 ? '+' : '-'}${difference.abs().toStringAsFixed(2)}€',
-                                                style: TextStyle(
-                                                    fontSize: 25,
-                                                    color: difference >= 0 ? Colors.green : Colors.red,
-                                                    fontWeight: FontWeight.w700
-                                                ),
+                                shrinkWrap: true,
+                                children: [
+                                  Center(
+                                    child: Text(
+                                      formattedDate,
+                                      style: const TextStyle(fontSize: 21, color: AppColors.pureBlack, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 30,),
+                                  const Text(
+                                    "BALANCE",
+                                    style: TextStyle(fontSize: 21, color: AppColors.textColor2, fontWeight: FontWeight.w600),
+                                  ),
+                                  Padding(
+                                      padding: const EdgeInsets.only(top: 5, bottom: 40),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            '${balance.toStringAsFixed(2)}€',
+                                            style: const TextStyle(fontSize: 36, color: AppColors.pureBlack, fontWeight: FontWeight.w700),
+                                          ),
+                                          ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
+                                            valueListenable: widget.deposits,
+                                            builder: (context, deposits, _) {
+                                              return ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
+                                                valueListenable: widget.expenses,
+                                                builder: (context, expenses, _) {
+                                                  double difference = getBalanceDifference(deposits[index], expenses[index]);
+                                                  return Text(
+                                                    '${difference >= 0 ? '+' : '-'}${difference.abs().toStringAsFixed(2)}€',
+                                                    style: TextStyle(
+                                                        fontSize: 25,
+                                                        color: difference >= 0 ? Colors.green : Colors.red,
+                                                        fontWeight: FontWeight.w700
+                                                    ),
+                                                  );
+                                                },
                                               );
                                             },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  )
-                              ),
-                              // Sezioni Depositi e Spese
-                              buildDepositsSection(index),
-                              buildExpensesSection(index),
-                            ],
+                                          ),
+                                        ],
+                                      )
+                                  ),
+                                  // Sezioni Depositi e Spese
+                                  buildDepositsSection(index),
+                                  buildExpensesSection(index),
+                                ],
+                              );
+                            },
                           );
                         },
                       );
-                    },
-                  );
-                }
-              );
-            }
+                    }
+                );
+              }
           );
         },
-      ),
+      ) : Center(child: CircularProgressIndicator()),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.secondaryColor,
         onPressed: () => _navigateToTransactionEditor(),

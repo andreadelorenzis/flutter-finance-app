@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/transaction_editor.dart';
+import 'package:flutter_finance_app/utils/utils.dart';
 import 'package:flutter_finance_app/widgets/transaction_item.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 
 
 class HistoryScreen extends StatefulWidget {
@@ -32,12 +35,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<Map<String, dynamic>> fetchHistoryData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('User not authenticated');
-    }
-
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
 
     // Ottiene il documento dell'utente per il campo 'balance'
     DocumentSnapshot userDoc = await FirebaseFirestore.instance
@@ -62,9 +60,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
         .map((doc) => doc.data() as Map<String, dynamic>)
         .toList();
 
+    // Gestisco anche le transazioni fisse
+    List<Map<String, dynamic>> augmentedTransactions = [];
+    DateTime now = DateTime.now();
+    var uuid = Uuid();
+    for (var transaction in transactions) {
+      if (transaction['isFixed'] != null && transaction['isFixed'] == true) {
+        DateTime transactionDate = (transaction['date'] as Timestamp).toDate();
+        int monthDiff = Utils.calculateMonthDifference(now, transactionDate);
+        String originalId = transaction['id'];
+
+        for (int i = 0; i <= monthDiff; i++) {
+          DateTime newDate = DateTime(now.year, now.month - i, transactionDate.day);
+          Map<String, dynamic> newTransaction = Map<String, dynamic>.from(transaction);
+          newTransaction['date'] = Timestamp.fromDate(newDate);
+          newTransaction['id'] = uuid.v4();
+          newTransaction['fixedId'] = originalId;
+          augmentedTransactions.add(newTransaction);
+        }
+      } else {
+        augmentedTransactions.add(transaction);
+      }
+    }
+
+    // Ordina le transazioni in augmentedTransactions in base alla data
+    augmentedTransactions.sort((a, b) {
+      DateTime dateA = (a['date'] as Timestamp).toDate();
+      DateTime dateB = (b['date'] as Timestamp).toDate();
+      return dateB.compareTo(dateA);
+    });
+
     return {
       'balance': balance,
-      'transactions': transactions,
+      'transactions': augmentedTransactions,
     };
   }
 
@@ -179,11 +207,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> saveNewTransaction(Map<String, dynamic> transactionData) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
 
     // Ottieni l'importo della transazione
     double transactionAmount = transactionData['amount'];
@@ -195,9 +219,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
       DocumentSnapshot userSnapshot = await transaction.get(userDocRef);
       double currentBalance = (userSnapshot.data() as Map<String, dynamic>)['balance']?.toDouble() ?? 0.0;
 
-      double updatedBalance = transactionData['method'] == 'Payment'
-          ? currentBalance - transactionAmount
-          : currentBalance + transactionAmount;
+      double updatedBalance = currentBalance;
+
+      if (transactionData['isFixed'] == null || !transactionData['isFixed']) {
+        updatedBalance = transactionData['method'] == 'Payment'
+            ? currentBalance - transactionAmount
+            : currentBalance + transactionAmount;
+      } else {
+        DateTime transactionDate = (transactionData['date'] as Timestamp).toDate();
+        DateTime now = DateTime.now();
+        int monthDiff = Utils.calculateMonthDifference(now, transactionDate);
+        for (int i = 0; i <= monthDiff; i++) {
+          updatedBalance = transactionData['method'] == 'Payment'
+              ? updatedBalance - transactionAmount
+              : updatedBalance + transactionAmount;
+        }
+      }
 
       var uuid = const Uuid();
       String transactionId = uuid.v4();
@@ -218,17 +255,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
   
   Future<void> editTransaction(Map<String, dynamic> transactionData) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
-    String userId = user.uid;
+    String? userId = Auth().getCurrentUser()?.uid;
 
     var userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
     var transactionsCollectionRef = userDocRef.collection('transactions');
 
     FirebaseFirestore.instance.runTransaction((transaction) async {
-      QuerySnapshot querySnapshot = await transactionsCollectionRef.where('id', isEqualTo: transactionData['id']).get();
+      QuerySnapshot querySnapshot;
+
+      if (transactionData['isFixed'] == null || !transactionData['isFixed']) {
+        querySnapshot = await transactionsCollectionRef.where('id', isEqualTo: transactionData['id']).get();
+      } else {
+        querySnapshot = await transactionsCollectionRef.where('id', isEqualTo: transactionData['fixedId']).get();
+      }
 
       if (querySnapshot.docs.isNotEmpty) {
         DocumentSnapshot transactionDocument = querySnapshot.docs.first;
@@ -242,9 +281,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
         double amountDifference = updatedAmount - originalAmount;
 
         // Aggiorna il bilancio
-        double updatedBalance = transactionData['method'] == 'Payment'
-            ? currentBalance - amountDifference
-            : currentBalance + amountDifference;
+        double updatedBalance = currentBalance;
+        if (transactionData['isFixed'] == null || !transactionData['isFixed']) {
+          updatedBalance = transactionData['method'] == 'Payment'
+              ? currentBalance - amountDifference
+              : currentBalance + amountDifference;
+        } else {
+          Map<String, dynamic> data = transactionDocument.data() as Map<String, dynamic>;
+          Timestamp timestamp = data['date'] as Timestamp;
+          DateTime fixedTransactionDate = timestamp.toDate();
+          transactionData['date'] = fixedTransactionDate;
+          DateTime now = DateTime.now();
+          int monthDiff = Utils.calculateMonthDifference(now, fixedTransactionDate);
+          for (int i = 0; i <= monthDiff; i++) {
+            updatedBalance = transactionData['method'] == 'Payment'
+                ? updatedBalance - amountDifference
+                : updatedBalance + amountDifference;
+          }
+        }
+
         transaction.update(userDocRef, {'balance': updatedBalance});
 
         // Aggiorna la transazione
@@ -263,15 +318,40 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> deleteTransactions() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      if (kDebugMode) {
-        print("User not authenticated");
+    // Verifica se ci sono transazioni fisse
+    bool hasFixedTransactions = false;
+    for (String transactionId in selectedTransactions) {
+      var transaction = _findTransactionByKey(transactionId);
+      if (transaction['isFixed'] != null && transaction['isFixed']) {
+        hasFixedTransactions = true;
+        break;
       }
-      return;
     }
-    String userId = user.uid;
 
+    if (hasFixedTransactions) {
+      bool shouldDelete = await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Warning!'),
+              content: const Text("Fixed transaction will be removed for all the months. Continue?"),
+              actions: <Widget>[
+                ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text("No")
+                ),
+                ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("Yes")
+                ),
+              ],
+            );
+          }
+      );
+      if (!shouldDelete) return;
+    }
+
+    String? userId = Auth().getCurrentUser()?.uid;
     var userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
     var transactionsCollection = userDocRef.collection('transactions');
 
@@ -281,14 +361,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
       // Calcola il totale delle transazioni da rimuovere
       for (String transactionId in selectedTransactions) {
-        QuerySnapshot querySnapshot = await transactionsCollection.where('id', isEqualTo: transactionId).get();
+        var transaction = _findTransactionByKey(transactionId);
+        QuerySnapshot querySnapshot;
+
+        if (transaction['isFixed'] == null || !transaction['isFixed']) {
+          querySnapshot = await transactionsCollection.where('id', isEqualTo: transaction['id']).get();
+        } else {
+          querySnapshot = await transactionsCollection.where('id', isEqualTo: transaction['fixedId']).get();
+        }
+
         for (var doc in querySnapshot.docs) {
           double amount = (doc.data() as Map<String, dynamic>)['amount']?.toDouble() ?? 0.0;
-          if ((doc.data() as Map<String, dynamic>)['method']?.toString() == 'Payment') {
-            totalAmountToRemove -= amount;
+          if (transaction['isFixed'] == null || !transaction['isFixed']) {
+            if ((doc.data() as Map<String, dynamic>)['method']?.toString() == 'Payment') {
+              totalAmountToRemove -= amount;
+            } else {
+              totalAmountToRemove += amount;
+            }
           } else {
-            totalAmountToRemove += amount;
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            Timestamp timestamp = data['date'] as Timestamp;
+            DateTime fixedTransactionDate = timestamp.toDate();
+            DateTime now = DateTime.now();
+            int monthDiff = Utils.calculateMonthDifference(now, fixedTransactionDate);
+            for (int i = 0; i <= monthDiff; i++) {
+              if ((doc.data() as Map<String, dynamic>)['method']?.toString() == 'Payment') {
+                totalAmountToRemove -= amount;
+              } else {
+                totalAmountToRemove += amount;
+              }
+            }
           }
+
           docsToDelete.add(doc); // Pianifica la cancellazione
         }
       }
@@ -359,11 +463,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             // Raggruppa le transazioni per data
             Map<String, List<Map<String, dynamic>>> groupedTransactions = {};
             for(var transaction in transactions) {
-              final date = transaction['date'].toDate().toString().split(' ')[0];
-              if (!groupedTransactions.containsKey(date)) {
-                groupedTransactions[date] = [];
+              final date = transaction['date'].toDate();
+              final formattedDate = DateFormat('dd MMM yyyy').format(date);
+              if (!groupedTransactions.containsKey(formattedDate)) {
+                groupedTransactions[formattedDate] = [];
               }
-              groupedTransactions[date]!.add(transaction);
+              groupedTransactions[formattedDate]!.add(transaction);
             }
 
             // Costruisce la lista di elementi

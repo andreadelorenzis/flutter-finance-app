@@ -270,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             padding: const EdgeInsets.all(0.0),
                                           ),
                                           onPressed: () {
-                                            Navigator.of(context).push(MaterialPageRoute(
+                                            Navigator.of(context).pushReplacement(MaterialPageRoute(
                                               builder: (context) => const RegistrationScreen(),
                                             ));
                                           },
