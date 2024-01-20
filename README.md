@@ -135,10 +135,3 @@ un flusso continuo, come nel caso dei cambiamenti alla sessione di autenticazion
 
 
 ---
-
-## Link
-La demo dell'applicazione è raggiungibile dai seguenti link.
-
-### Android
-
-### Web
