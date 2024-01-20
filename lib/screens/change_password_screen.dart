@@ -18,7 +18,6 @@ class ChangePasswordScreen extends StatefulWidget {
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _loading = false;
   final _formKey = GlobalKey<FormState>();
-  String? errorMessage = '';
   final TextEditingController _controllerEmail = TextEditingController();
 
   @override
@@ -35,9 +34,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+      var snackBar = SnackBar(content: Text(e.message ?? ""));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 

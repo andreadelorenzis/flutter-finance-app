@@ -16,7 +16,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   final _formKey = GlobalKey<FormState>();
-  String? errorMessage = '';
 
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
@@ -28,9 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _controllerPassword.text
       );
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+      var snackBar = SnackBar(content: Text(e.message ?? ""));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -43,14 +41,9 @@ class _LoginScreenState extends State<LoginScreen> {
         print(userCredential.user?.uid);
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+      var snackBar = SnackBar(content: Text(e.message ?? ""));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-  }
-
-  Widget _errorMessage() {
-    return Text(errorMessage == '' ? '' : 'Humm ? $errorMessage');
   }
 
   handleSubmitWithCredentials() async {
@@ -104,7 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: <Widget>[
                                     const SizedBox(height: 20),
-                                    _errorMessage(),
                                     const Text("Sign In", textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 20),
                                     ElevatedButton.icon(

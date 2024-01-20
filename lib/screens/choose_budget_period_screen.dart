@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
+import 'package:flutter_finance_app/constants/months.dart';
+import 'package:flutter_finance_app/utils/utils.dart';
 import 'package:intl/intl.dart';
 import 'budget_month_screen.dart';
 
@@ -11,6 +13,8 @@ class ChooseBudgetPeriodScreen extends StatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
   final double initialBalance;
+  final ValueNotifier<List<List<Map<String, dynamic>>>> deposits;
+  final ValueNotifier<List<List<Map<String, dynamic>>>> expenses;
 
   const ChooseBudgetPeriodScreen({
     super.key,
@@ -18,7 +22,9 @@ class ChooseBudgetPeriodScreen extends StatefulWidget {
     this.isEditing = false,
     required this.startDate,
     required this.endDate,
-    required this.initialBalance
+    required this.initialBalance,
+    required this.deposits,
+    required this.expenses
   });
 
   @override
@@ -30,6 +36,7 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
   late ValueNotifier<DateTime> endDateNotifier;
   late ValueNotifier<double> initialBalanceNotifier;
   TextEditingController budgetController = TextEditingController();
+  late final ValueNotifier<List<Map<String, dynamic>>> monthlyBalances;
 
   @override
   void initState() {
@@ -38,6 +45,7 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
     endDateNotifier = ValueNotifier(widget.endDate);
     initialBalanceNotifier = ValueNotifier(widget.initialBalance);
     budgetController = TextEditingController(text: widget.initialBalance.toString());
+    monthlyBalances = ValueNotifier([]);
   }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
@@ -72,21 +80,30 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
 
     if (initialBudget != null) {
       initialBalanceNotifier.value = initialBudget;
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => BudgetMonthScreen(
             startDate: startDateNotifier,
             endDate: endDateNotifier,
             initialBalance: initialBalanceNotifier,
-            deposits: ValueNotifier([]),
-            expenses: ValueNotifier([]),
-            monthlyBalances: ValueNotifier([]),
+            deposits: widget.deposits,
+            expenses: widget.expenses,
+            monthlyBalances: monthlyBalances,
             onDataUpdated: widget.onDataUpdated,
           ),
         ),
       );
     }
+  }
+
+  int calculateMonthsBetween(DateTime startDate, DateTime endDate) {
+    // Calcola la differenza in anni e mesi
+    int yearDiff = endDate.year - startDate.year;
+    int monthDiff = endDate.month - startDate.month + 1;
+
+    // Calcola il numero totale di mesi
+    return yearDiff * 12 + monthDiff;
   }
 
   Future<void> _saveBudgetData(DateTime startDate, DateTime endDate, double initialBudget) async {
@@ -108,6 +125,22 @@ class _ChooseBudgetPeriodScreenState extends State<ChooseBudgetPeriodScreen> {
       monthlyTransactions[monthKey] = [];
 
       currentMonth = DateTime(currentMonth.year, currentMonth.month + 1);
+    }
+
+    // Inizializzazione degli array per bilanci e profitti
+    int months = calculateMonthsBetween(startDate, endDate);
+    monthlyBalances.value = List.generate(months, (_) {
+      var balanceMap = {
+        'month': '${Months.getFull(currentMonth.month - 1)} ${currentMonth.year}',
+        'balance': 0.0
+      };
+      currentMonth = DateTime(currentMonth.year, currentMonth.month + 1, 1);
+      return balanceMap;
+    });
+
+    // Imposta l'initialBalance per il primo mese
+    if (monthlyBalances.value.isNotEmpty) {
+      monthlyBalances.value[0]['balance'] = initialBudget;
     }
 
     // Inizializzazione delle transazioni fisse

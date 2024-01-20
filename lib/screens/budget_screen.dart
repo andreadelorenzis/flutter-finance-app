@@ -20,9 +20,9 @@ class BudgetScreen extends StatefulWidget {
 
 class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserver {
   bool isPlanCreated = false;
-  late ValueNotifier<DateTime> startDate;
-  late ValueNotifier<DateTime> endDate;
-  late ValueNotifier<double> initialBalance;
+  late ValueNotifier<DateTime> startDateNotifier;
+  late ValueNotifier<DateTime> endDateNotifier;
+  late ValueNotifier<double> initialBalanceNotifier;
   late List<Map<String, double>> monthlyEarnings;
   late ValueNotifier<List<Map<String, dynamic>>> monthlyBalances;
   late ValueNotifier<List<List<Map<String, dynamic>>>> deposits;
@@ -35,9 +35,9 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     deposits = ValueNotifier([]);
     expenses = ValueNotifier([]);
     monthlyBalances = ValueNotifier([]);
-    startDate = ValueNotifier(DateTime.now());
-    endDate = ValueNotifier(DateTime.now());
-    initialBalance = ValueNotifier(0);
+    startDateNotifier = ValueNotifier(DateTime.now());
+    endDateNotifier = ValueNotifier(DateTime.now());
+    initialBalanceNotifier = ValueNotifier(0);
     budgetDataFuture = fetchBudgetData();
   }
 
@@ -86,19 +86,19 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
       return;
     }
 
-    startDate.value = (budgetData['startDate'] as Timestamp).toDate();
-    endDate.value = (budgetData['endDate'] as Timestamp).toDate();
-    initialBalance.value = budgetData['initialBalance'];
+    startDateNotifier.value = (budgetData['startDate'] as Timestamp).toDate();
+    endDateNotifier.value = (budgetData['endDate'] as Timestamp).toDate();
+    initialBalanceNotifier.value = budgetData['initialBalance'];
     Map<String, dynamic> monthlyTransactions = budgetData['monthlyTransactions'];
     Map<String, dynamic> fixedTransactions = budgetData['fixedTransactions'];
 
-    int months = calculateMonthsBetween(startDate.value, endDate.value);
+    int months = calculateMonthsBetween(startDateNotifier.value, endDateNotifier.value);
 
     deposits.value = List.generate(months, (_) => []);
     expenses.value = List.generate(months, (_) => []);
 
     // Inizializzazione degli array per bilanci e profitti
-    DateTime currentMonth = startDate.value;
+    DateTime currentMonth = startDateNotifier.value;
     monthlyBalances.value = List.generate(months, (_) {
       var balanceMap = {
         'month': '${Months.getFull(currentMonth.month - 1)} ${currentMonth.year}',
@@ -110,15 +110,16 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
 
     // Imposta l'initialBalance per il primo mese
     if (monthlyBalances.value.isNotEmpty) {
-      monthlyBalances.value[0]['balance'] = initialBalance.value;
+      monthlyBalances.value[0]['balance'] = initialBalanceNotifier.value;
     }
 
+    print(monthlyBalances.value.length);
+
     List<String> monthsBetween = [];
-    DateTime currentDate = startDate.value;
+    DateTime currentDate = startDateNotifier.value;
 
-
-    while (currentDate.year < endDate.value.year ||
-        (currentDate.year == endDate.value.year && currentDate.month <= endDate.value.month)) {
+    while (currentDate.year < endDateNotifier.value.year ||
+        (currentDate.year == endDateNotifier.value.year && currentDate.month <= endDateNotifier.value.month)) {
       monthsBetween.add("${Months.getFull(currentDate.month - 1)} ${currentDate.year}");
       currentDate = (currentDate.month < 12)
           ? DateTime(currentDate.year, currentDate.month + 1, currentDate.day)
@@ -129,8 +130,8 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
     // Aggiorna le transazioni mensili
     int i = 0;
     var uuid = const Uuid();
-    currentDate = startDate.value;
-    while (currentDate.isBefore(endDate.value) || currentDate.isAtSameMomentAs(endDate.value)) {
+    currentDate = startDateNotifier.value;
+    while (currentDate.isBefore(endDateNotifier.value) || currentDate.isAtSameMomentAs(endDateNotifier.value)) {
       String monthKey = '${currentDate.year}-${currentDate.month.toString().padLeft(2, '0')}';
 
       List<dynamic>? transactions = monthlyTransactions[monthKey];
@@ -247,9 +248,9 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => BudgetMonthScreen(
-                startDate: startDate,
-                endDate: endDate,
-                initialBalance: initialBalance,
+                startDate: startDateNotifier,
+                endDate: endDateNotifier,
+                initialBalance: initialBalanceNotifier,
                 deposits: deposits,
                 expenses: expenses,
                 monthlyBalances: monthlyBalances,
@@ -291,6 +292,8 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
                   startDate: now,
                   endDate: twelveMonthsLater,
                   initialBalance: 0,
+                  deposits: deposits,
+                  expenses: expenses,
                 )),
               ).then((value) {
                 fetchBudgetData();
@@ -340,14 +343,14 @@ class _BudgetScreenState  extends State<BudgetScreen> with WidgetsBindingObserve
               children: [
                 _buildBalanceInfo(
                   "Start",
-                  monthlyBalances.value[0]['balance']!,
-                  startDate.value,
+                  initialBalanceNotifier.value,
+                  startDateNotifier.value,
                 ),
                 Icon(Icons.arrow_forward, size: isWideScreen ? 50 : 30),
                 _buildBalanceInfo(
                     "End",
                     monthlyBalances.value[monthlyBalances.value.length - 1]['balance']!,
-                    endDate.value,
+                    endDateNotifier.value,
                     compare: compareBalances(monthlyBalances.value[monthlyBalances.value.length - 1]['balance']!, monthlyBalances.value[0]['balance']!)
                 ),
               ],

@@ -472,6 +472,8 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
                   endDate: widget.endDate.value,
                   initialBalance: widget.initialBalance.value,
                   isEditing: true,
+                  deposits: widget.deposits,
+                  expenses: widget.expenses,
                 ))
               );
             }
@@ -533,6 +535,14 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
                                               return ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
                                                 valueListenable: widget.expenses,
                                                 builder: (context, expenses, _) {
+                                                  if (deposits.isEmpty || expenses.isEmpty) {
+                                                    return const Text("0.0€", style: TextStyle(
+                                                        fontSize: 25,
+                                                        color: AppColors.black,
+                                                        fontWeight: FontWeight.w700
+                                                    ),);
+                                                  }
+                                                  
                                                   double difference = getBalanceDifference(deposits[index], expenses[index]);
                                                   return Text(
                                                     '${difference >= 0 ? '+' : '-'}${difference.abs().toStringAsFixed(2)}€',
@@ -576,6 +586,20 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
     return ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
       valueListenable: widget.deposits,
       builder: (context, deposits, _) {
+        if (deposits.isEmpty) {
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Deposits", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 15),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Text('Total: €0'),
+              ),
+            ],
+          );
+        }
+
         List<Map<String, dynamic>> monthDeposits = deposits[index];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -597,6 +621,20 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
     return ValueListenableBuilder<List<List<Map<String, dynamic>>>>(
       valueListenable: widget.expenses,
       builder: (context, expenses, _) {
+        if (expenses.isEmpty) {
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Expenses", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 15),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Text('Total: €0'),
+              ),
+            ],
+          );
+        }
+
         List<Map<String, dynamic>> monthExpenses = expenses[index];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

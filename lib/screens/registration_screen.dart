@@ -17,7 +17,6 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _loading = false;
   final _formKey = GlobalKey<FormState>();
-  String? errorMessage = '';
 
 
   final TextEditingController _controllerName = TextEditingController();
@@ -44,9 +43,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+      var snackBar = SnackBar(content: Text(e.message ?? ""));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -75,14 +73,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         print(userCredential.user?.uid);
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+      var snackBar = SnackBar(content: Text(e.message ?? ""));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-  }
-
-  Widget _errorMessage() {
-    return Text(errorMessage == '' ? '' : 'Humm ? $errorMessage');
   }
 
   handleSubmitWithCredentials() async {
@@ -136,7 +129,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: <Widget>[
                                     const SizedBox(height: 20),
-                                    _errorMessage(),
                                     const Text("Sign Up", textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 20),
                                     ElevatedButton.icon(

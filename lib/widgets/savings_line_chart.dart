@@ -43,7 +43,7 @@ class _SavingsChartState extends State<SavingsChart> {
     String monthYear = widget.monthlyBalances[value.toInt()]["month"] ?? '';
     List<String> parts = monthYear.split(' ');
     String year = parts.length > 1 ? parts[1] : '';
-    String month = Months.getShort(value.toInt());
+    String month = Months.getShort(value.toInt() % 12);
     int lastIndex = widget.monthlyBalances.length - 2;
     int middleIndex = widget.monthlyBalances.length ~/ 2;
 
