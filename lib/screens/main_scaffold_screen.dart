@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/profile_screen.dart';
@@ -71,10 +69,12 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
 
   Future<void> signOut() async {
     await Auth().signOut();
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const WidgetTree()),
-          (Route<dynamic> route) => false,
-    );
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const WidgetTree()),
+            (Route<dynamic> route) => false,
+      );
+    }
   }
 
   @override

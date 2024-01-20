@@ -9,7 +9,8 @@ _Progetto creato da **Andrea De Lorenzis**, **329975**_
 
 ## Presentazione
 BudgetBuddy è un'applicazione per la gestione personale delle finanze sviluppata come
-progetto durante il corso di "Programmazione di Dispositivi Mobili e Interfacce Utente" dell'Università di Urbino. 
+progetto durante il corso di "Programmazione di Dispositivi Mobili e Interfacce Utente" del corso di Informatica 
+Magistrale presso l'Università di Urbino. 
 L'obiettivo principale dell'app è fornire agli utenti uno strumento semplice ma efficace per
 monitorare e gestire le proprie finanze quotidiane. E' disponibile per piattaforme Android e Web.
 
@@ -50,7 +51,7 @@ Se la sessione di autenticazione dell'utente è scaduta, questo viene portato al
 Se è la prima volta che l'utente accede all'app, deve dirigersi alla pagina di "Sign Up", per creare un nuovo account. Se l'utente si era precedentemente autenticato, ma non ricorda le proprie
 credenziali, può richiedere un reset della password via email tramite l'apposita pagina. 
 
-Per l'accesso è possibile usare la seguente utenza demo:
+Per l'accesso è possibile usare la seguente utenza demo, per testare un profilo già popolato con dei dati mock:
 + email: mariorossi@gmail.com
 + password: 123456
 

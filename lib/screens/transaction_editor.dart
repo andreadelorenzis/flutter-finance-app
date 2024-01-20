@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
@@ -45,7 +44,7 @@ class _TransactionEditorState extends State<TransactionEditor> {
 
   void handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    User? user = Auth().getCurrentUser();
+    Auth().getCurrentUser();
 
     Map<String, dynamic> transactionData = {
       'id': widget.transaction?['id'],

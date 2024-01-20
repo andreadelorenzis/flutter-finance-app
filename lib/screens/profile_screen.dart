@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/AuthMethod.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
@@ -58,21 +59,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> signOut() async {
     await Auth().signOut();
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const WidgetTree()),
-          (Route<dynamic> route) => false,
-    );
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const WidgetTree()),
+            (Route<dynamic> route) => false,
+      );
+    }
   }
 
   Future<void> updateUsername(String newName) async {
     try {
       await Auth().updateDisplayName(newName);
       const snackBar = SnackBar(content: Text('Information updated.'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
       widget.onUpdateName(newName);
     } catch (error) {
       final snackBar = SnackBar(content: Text('Failed to update username: $error'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
@@ -80,12 +87,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await Auth().updateEmail(newEmail);
       const snackBar = SnackBar(content: Text('Please, go and verify your new email.'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
       widget.onUpdateEmail(newEmail);
     } catch (error) {
       final snackBar = SnackBar(content: Text('Failed to update email. Error: $error'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      print(error);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      if (kDebugMode) {
+        print(error);
+      }
     }
   }
 
@@ -156,7 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               onPressed: () {
                                 AuthMethod authMethod = Auth().getAuthMethod();
                                 if (authMethod == AuthMethod.google) {
-                                  final snackBar = SnackBar(content: Text("Users signed in with Google can't change the password."));
+                                  const snackBar = SnackBar(content: Text("Users signed in with Google can't change the password."));
                                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                 } else {
                                   Navigator.of(context).push(MaterialPageRoute(

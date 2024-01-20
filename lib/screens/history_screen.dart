@@ -6,7 +6,6 @@ import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/transaction_editor.dart';
 import 'package:flutter_finance_app/utils/utils.dart';
 import 'package:flutter_finance_app/widgets/transaction_item.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 
@@ -63,7 +62,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     // Gestisco anche le transazioni fisse
     List<Map<String, dynamic>> augmentedTransactions = [];
     DateTime now = DateTime.now();
-    var uuid = Uuid();
+    var uuid = const Uuid();
     for (var transaction in transactions) {
       if (transaction['isFixed'] != null && transaction['isFixed'] == true) {
         DateTime transactionDate = (transaction['date'] as Timestamp).toDate();

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
@@ -573,7 +572,7 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
               }
           );
         },
-      ) : Center(child: CircularProgressIndicator()),
+      ) : const Center(child: CircularProgressIndicator()),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.secondaryColor,
         onPressed: () => _navigateToTransactionEditor(),

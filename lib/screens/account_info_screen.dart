@@ -52,7 +52,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
             onPressed: () {
               Map<String, dynamic> data = {
                 "name": _controllerName.text,
-                "email": _controllerEmail.text ?? ""
+                "email": _controllerEmail.text
               };
               widget.onSubmit(data);
               Navigator.of(context).pop(true);

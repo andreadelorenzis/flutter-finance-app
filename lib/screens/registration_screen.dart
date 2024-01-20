@@ -35,16 +35,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         await user.reload();
         User? updatedUser = FirebaseAuth.instance.currentUser;
         await _checkAndCreateUser(user);
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => MainScaffoldScreen(
-              name: updatedUser?.displayName, email: user.email, image: user.photoURL
-          ),
-        ));
+        if (mounted) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => MainScaffoldScreen(
+                name: updatedUser?.displayName, email: user.email, image: user.photoURL
+            ),
+          ));
+        }
 
       }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
@@ -74,7 +78,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 

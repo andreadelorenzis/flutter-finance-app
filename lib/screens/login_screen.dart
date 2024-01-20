@@ -28,7 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
@@ -42,7 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
