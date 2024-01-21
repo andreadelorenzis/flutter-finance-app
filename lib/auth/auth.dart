@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_finance_app/auth/AuthMethod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:universal_platform/universal_platform.dart';
@@ -19,28 +20,36 @@ class Auth{
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   Future<UserCredential> signInWithGoogle() async {
-    GoogleSignInAccount? googleUser;
-    GoogleSignInAuthentication? googleAuth;
+    try {
 
-    // Inizia il flusso di autenticazione per il Web
-    googleUser = await _googleSignIn.signIn();
+      GoogleSignInAccount? googleUser;
+      GoogleSignInAuthentication? googleAuth;
 
-    if (googleUser == null) {
-      throw FirebaseAuthException(
-        code: 'ERROR_ABORTED_BY_USER',
-        message: 'Sign in aborted by user',
+      // Inizia il flusso di autenticazione per il Web
+      googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        throw FirebaseAuthException(
+          code: 'ERROR_ABORTED_BY_USER',
+          message: 'Sign in aborted by user',
+        );
+      }
+      googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
+
+      // Once signed in, return the UserCredential
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error during sign in with Google: $e");
+      }
+      rethrow;
     }
-    googleAuth = await googleUser.authentication;
-
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
   Future<void> signOut() async {

@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_finance_app/auth/auth.dart';
 import 'package:flutter_finance_app/constants/colors.dart';
 import 'package:flutter_finance_app/screens/forgot_password_screen.dart';
+import 'package:flutter_finance_app/screens/main_scaffold_screen.dart';
 import 'package:flutter_finance_app/screens/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,16 +18,27 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   final _formKey = GlobalKey<FormState>();
+  bool _passwordVisible = false;
 
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async {
     try {
-      await Auth().signInWithEmailAndPassword(
+      UserCredential userCredential = await Auth().signInWithEmailAndPassword(
           email: _controllerEmail.text,
           password: _controllerPassword.text
       );
+      User? user = userCredential.user;
+      if (user != null) {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => MainScaffoldScreen(
+                name: user?.displayName, email: user.email, image: user.photoURL
+            ),
+          ));
+        }
+      }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
       if (mounted) {
@@ -42,10 +55,38 @@ class _LoginScreenState extends State<LoginScreen> {
         print(userCredential.user?.email);
         print(userCredential.user?.uid);
       }
+
+      User? user = userCredential.user;
+      if (user != null) {
+        await _checkAndCreateUser(user);
+      }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
+  }
+
+  Future<void> _checkAndCreateUser(User user) async {
+    try {
+      var userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (!userDoc.exists) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': user.email,
+          'balance': 0,
+        });
+      }
+      if (mounted) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => MainScaffoldScreen(
+              name: user?.displayName, email: user.email, image: user.photoURL
+          ),
+        ));
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error while trying to create user in Firestore: $e");
       }
     }
   }
@@ -190,9 +231,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                         suffixIcon: Padding(
                                           padding: const EdgeInsets.only(left: 20, right: 12),
                                           child: IconButton(
-                                            icon: const Icon(Icons.visibility, color: AppColors.textColor),
+                                            icon: Icon(
+                                                _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                                                color: AppColors.textColor),
                                             onPressed: () {
-                                              // Logica per mostrare/nascondere la password
+                                              setState(() {
+                                                _passwordVisible = !_passwordVisible;
+                                              });
                                             },
                                           ),
                                         ),
@@ -202,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                         contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0), // Padding attorno al testo
                                       ),
-                                      obscureText: true, // Nasconde la password
+                                      obscureText: !_passwordVisible, // Nasconde la password
                                     ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,

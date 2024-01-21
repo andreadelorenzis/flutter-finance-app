@@ -17,6 +17,7 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _loading = false;
   final _formKey = GlobalKey<FormState>();
+  bool _passwordVisible = false;
 
 
   final TextEditingController _controllerName = TextEditingController();
@@ -35,14 +36,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         await user.reload();
         User? updatedUser = FirebaseAuth.instance.currentUser;
         await _checkAndCreateUser(user);
-        if (mounted) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => MainScaffoldScreen(
-                name: updatedUser?.displayName, email: user.email, image: user.photoURL
-            ),
-          ));
-        }
-
       }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
@@ -61,6 +54,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'balance': 0,
         });
       }
+      if (mounted) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => MainScaffoldScreen(
+              name: user?.displayName, email: user.email, image: user.photoURL
+          ),
+        ));
+      }
     } catch (e) {
       if (kDebugMode) {
         print("Error while trying to create user in Firestore: $e");
@@ -75,6 +75,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         print(userCredential.user?.displayName);
         print(userCredential.user?.email);
         print(userCredential.user?.uid);
+      }
+
+      User? user = userCredential.user;
+      if (user != null) {
+        await _checkAndCreateUser(user);
       }
     } on FirebaseAuthException catch (e) {
       var snackBar = SnackBar(content: Text(e.message ?? ""));
@@ -249,9 +254,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         suffixIcon: Padding(
                                           padding: const EdgeInsets.only(left: 20, right: 12),
                                           child: IconButton(
-                                            icon: const Icon(Icons.visibility, color: AppColors.textColor),
+                                            icon: Icon(
+                                                _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                                                color: AppColors.textColor),
                                             onPressed: () {
-                                              // Logica per mostrare/nascondere la password
+                                              setState(() {
+                                                _passwordVisible = !_passwordVisible;
+                                              });
                                             },
                                           ),
                                         ),
@@ -261,7 +270,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         ),
                                         contentPadding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0), // Padding attorno al testo
                                       ),
-                                      obscureText: true, // Nasconde la password
+                                      obscureText: !_passwordVisible, // Nasconde la password
                                     ),
                                     const SizedBox(height: 20),
                                     ElevatedButton(
