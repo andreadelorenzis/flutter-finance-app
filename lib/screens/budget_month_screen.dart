@@ -36,6 +36,7 @@ class BudgetMonthScreen extends StatefulWidget {
 class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
   final PageController _pageController = PageController();
   late Future<void> budgetDataFuture;
+  int _currentPageIndex = 0;
 
   OverlayEntry? editingAppBarOverlay;
   Set<String> selectedTransactions = {};
@@ -52,6 +53,12 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
           selectedTransactions.clear();
         });
         hideEditingAppBar();
+      }
+      int nextPage = _pageController.page!.round();
+      if (_currentPageIndex != nextPage) {
+        setState(() {
+          _currentPageIndex = nextPage;
+        });
       }
     });
   }
@@ -509,10 +516,45 @@ class _BudgetMonthScreenState extends State<BudgetMonthScreen> {
                                 shrinkWrap: true,
                                 children: [
                                   Center(
-                                    child: Text(
-                                      formattedDate,
-                                      style: const TextStyle(fontSize: 21, color: AppColors.pureBlack, fontWeight: FontWeight.w600),
-                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        IconButton(
+                                            onPressed: () {
+                                              if (_pageController.page! > 0) {
+                                                _pageController.previousPage(
+                                                  duration: const Duration(milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                );
+                                              }
+                                            },
+                                            icon: Icon(
+                                                Icons.arrow_left,
+                                                color: _currentPageIndex > 0 ? Colors.black : Colors.grey[400],
+                                                size: 30
+                                            )
+                                        ),
+                                        Text(
+                                          formattedDate,
+                                          style: const TextStyle(fontSize: 21, color: AppColors.pureBlack, fontWeight: FontWeight.w600),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            if (_pageController.page! < monthlyBalances.length - 1) {
+                                              _pageController.nextPage(
+                                                duration: const Duration(milliseconds: 300),
+                                                curve: Curves.easeInOut,
+                                              );
+                                            }
+                                          },
+                                            icon: Icon(
+                                                Icons.arrow_right,
+                                                color: _currentPageIndex < monthlyBalances.length - 1 ? Colors.black : Colors.grey[400],
+                                                size: 30
+                                            )
+                                        ),
+                                      ],
+                                    )
                                   ),
                                   const SizedBox(height: 30,),
                                   const Text(
