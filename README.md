@@ -19,7 +19,7 @@ The main features of the app are:
 
 ---
 
-## ## Use Cases
+## Use Cases
 
 1. A user, Mario, uses BudgetBuddy to record his daily expenses and incomes. He enters the details of each transaction—like rent, grocery shopping, or utility bill payments—and can set transactions as recurring so they’re automatically added on specific dates.
 2. At the end of the month, Mario checks the app’s charts to see a summary of all transactions, comparing them with previous months. He notices he spends too much on dining out and decides to cut back next month.
@@ -27,7 +27,7 @@ The main features of the app are:
 
 ---
 
-## ## User Experience
+## User Experience
 
 ### Splash Screen
 
